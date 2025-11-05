@@ -112,7 +112,19 @@ return [
             // 'encrypt' => env('DB_ENCRYPT', 'yes'),
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
-
+        'members_db' => [
+            'driver' => 'mysql',
+            'host' => env('MEMBER_DB_HOST', '127.0.0.1'),
+            'port' => env('MEMBER_DB_PORT', '3306'),
+            'database' => env('MEMBER_DB_DATABASE', 'members_db'),
+            'username' => env('MEMBER_DB_USERNAME', 'root'),
+            'password' => env('MEMBER_DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
     ],
 
     /*
@@ -148,7 +160,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
+            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')) . '-database-'),
             'persistent' => env('REDIS_PERSISTENT', false),
         ],
 
