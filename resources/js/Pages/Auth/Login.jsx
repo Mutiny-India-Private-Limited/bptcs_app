@@ -1,6 +1,6 @@
 import React from "react";
 import GuestLayout from "@/Layouts/GuestLayout";
-import { useForm, usePage } from "@inertiajs/react";
+import { Head, useForm, usePage } from "@inertiajs/react";
 
 export default function Login() {
     const {
@@ -21,10 +21,9 @@ export default function Login() {
 
     const { errors: propsErrors } = usePage().props;
     const errors = Object.keys(formErrors).length ? formErrors : propsErrors;
-    console.log("errors", propsErrors);
 
     return (
-        <GuestLayout>
+        <GuestLayout title="Login">
             {/* Wrapper with fade effect while submitting */}
             <div
                 className={`transition-opacity duration-300 ${

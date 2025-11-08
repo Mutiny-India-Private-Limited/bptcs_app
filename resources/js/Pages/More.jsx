@@ -17,19 +17,19 @@ export default function More() {
             label: "Refresh",
             href: route("refresh"),
         },
-        { icon: "fa-solid fa-gear", label: "Settings", href: "/settings" },
+        // { icon: "fa-solid fa-gear", label: "Settings", href: "/settings" },
         {
             icon: "fa-solid fa-circle-question",
             label: "Help & Support",
-            href: "/help",
+            href: route("help_support"),
         },
-        { icon: "fa-solid fa-info-circle", label: "About", href: "/about" },
-        {
-            icon: "fa-solid fa-file-lines",
-            label: "Terms & Conditions",
-            href: "/terms",
-        },
-        { icon: "fa-solid fa-lock", label: "Privacy Policy", href: "/privacy" },
+        // { icon: "fa-solid fa-info-circle", label: "About", href: "/about" },
+        // {
+        //     icon: "fa-solid fa-file-lines",
+        //     label: "Terms & Conditions",
+        //     href: "/terms",
+        // },
+        // { icon: "fa-solid fa-lock", label: "Privacy Policy", href: "/privacy" },
     ];
 
     return (
