@@ -23,13 +23,16 @@ export default function More() {
             label: "Help & Support",
             href: route("help_support"),
         },
-        // { icon: "fa-solid fa-info-circle", label: "About", href: "/about" },
-        // {
-        //     icon: "fa-solid fa-file-lines",
-        //     label: "Terms & Conditions",
-        //     href: "/terms",
-        // },
-        // { icon: "fa-solid fa-lock", label: "Privacy Policy", href: "/privacy" },
+        {
+            icon: "fa-solid fa-blog",
+            label: "Blogs",
+            href: route("blogs"),
+        },
+        {
+            icon: "fa-solid fa-bell",
+            label: "Notification",
+            href: route("notification"),
+        },
     ];
 
     return (

@@ -261,10 +261,10 @@ export default function Home() {
                     color="yellow"
                 />
                 <MetricCard
-                    title=""
+                    title="Share Details"
                     value={totals.share_details}
                     color="gray"
-                    valueSize="text-sm"
+                    valueSize="text-xs"
                 />
             </div>
         </AppLayout>

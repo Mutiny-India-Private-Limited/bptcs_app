@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth.member' => \App\Http\Middleware\MemberAuth::class,
             'guest.member' => \App\Http\Middleware\MemberGuest::class,
+            'admin.auth' => \App\Http\Middleware\AdminAuth::class,
+            'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+
         ]);
 
         //

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Member;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class LoginController extends Controller
@@ -78,5 +81,48 @@ class LoginController extends Controller
     {
         $request->session()->flush();
         return redirect()->route('login');
+    }
+
+    public function refresh(Request $request)
+    {
+        $memberNumber = authMember()->member_number;
+        Cache::forget("dashboard_summary_{$memberNumber}");
+        Artisan::call('cache:clear');
+        Artisan::call('config:clear');
+        return redirect()->back()->with('success', 'Page refresh successfully!');
+    }
+
+    // Show admin login form
+    public function adminShowLoginForm()
+    {
+        return view('admin.auth.login'); // create this view
+    }
+
+    // Handle admin login
+    public function adminLogin(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::guard('admin')->attempt($credentials)) {
+            return redirect()->route('admin.blogs.manage')->with('success', 'Logged in successfully.');
+        }
+
+        return back()
+            ->withInput()
+            ->with(['error' => 'Invalid Email or Password.']);
+    }
+
+
+    // Admin logout
+    public function adminLogout()
+    {
+        Auth::guard('admin')->logout();
+        return redirect()->route('admin.login')
+            ->with('success', 'Logged out successfully.');
     }
 }

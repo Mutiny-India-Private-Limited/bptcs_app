@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\FirebaseController;
+use App\Http\Controllers\GeneralController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\ProfileController;
@@ -47,45 +50,39 @@ Route::middleware('auth.member')->group(function () {
     Route::get('/ledger/years', [MainController::class, 'ledgerYears'])
         ->name('ledger.years');
 
-    // Route::get('/ledger/{year?}', function ($year = '2024-2025') {
-    //     return Inertia::render('Ledger', [
-    //         'year' => $year,
-    //         'openingBalance' => 50000,
-    //         'closingBalance' => 195000,
-    //         'ledgerData' => [
-    //             ['month' => 'April', 'cgr' => ['amount' => 12000, 'date' => '2024-04-10'], 'interest' => 450],
-    //             ['month' => 'May', 'cgr' => ['amount' => 10000, 'date' => '2024-05-09'], 'interest' => 410],
-    //             ['month' => 'June', 'cgr' => ['amount' => 15000, 'date' => '2024-06-15'], 'interest' => 500],
-    //             ['month' => 'July', 'cgr' => ['amount' => 13000, 'date' => '2024-07-12'], 'interest' => 470],
-    //             ['month' => 'August', 'cgr' => ['amount' => 14000, 'date' => '2024-08-18'], 'interest' => 480],
-    //             ['month' => 'September', 'cgr' => ['amount' => 16000, 'date' => '2024-09-16'], 'interest' => 520],
-    //             ['month' => 'October', 'cgr' => ['amount' => 12500, 'date' => '2024-10-13'], 'interest' => 460],
-    //             ['month' => 'November', 'cgr' => ['amount' => 17000, 'date' => '2024-11-10'], 'interest' => 550],
-    //             ['month' => 'December', 'cgr' => ['amount' => 14500, 'date' => '2024-12-20'], 'interest' => 495],
-    //             ['month' => 'January', 'cgr' => ['amount' => 15500, 'date' => '2025-01-18'], 'interest' => 505],
-    //             ['month' => 'February', 'cgr' => ['amount' => 13500, 'date' => '2025-02-15'], 'interest' => 460],
-    //             ['month' => 'March', 'cgr' => ['amount' => 18000, 'date' => '2025-03-10'], 'interest' => 580],
-    //         ],
-    //     ]);
-    // })->name('ledger');
     Route::get('/ledger/{year}', [MainController::class, 'ledger'])
         ->name('ledger');
 
     Route::get('/more', fn() => Inertia::render('More'))->name('more');
+
+    // Route::get('/notifications', fn() => Inertia::render('Notification'))->name('notification');
+    Route::get('/notifications', [MainController::class, 'notifications'])->name('notification');
     Route::get('/help_support', [MainController::class, 'help_support'])->name('help_support');
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-    Route::get('/refresh', function () {
-        $memberNumber = authMember()->member_number;
-        Cache::forget("dashboard_summary_{$memberNumber}");
-        Artisan::call('cache:clear');
-        Artisan::call('config:clear');
-        return redirect()->back()->with('success', 'Page refresh successfully!');
-    })->name('refresh');
+    Route::get('/refresh', [LoginController::class, 'refresh'])->name('refresh');
+
+    Route::get('/blogs', [BlogController::class, 'blogs'])->name('blogs');
+
+    Route::get('/blog-details/{id}', [BlogController::class, 'blog_details'])->name('blog_details');
 });
 
+Route::get('/migrate', function () {
+    return Artisan::call('migrate');
+});
+Route::get('/seed', function () {
+    return Artisan::call('db:seed');
+});
+Route::get('/storage-link', function () {
+    return Artisan::call('storage:link');
+});
+// Route::post('/fire_notifi_add', [GeneralController::class, 'fire_notifi_add'])->name('fire_notifi_add');
 
 
 
+
+
+
+require __DIR__ . '/admin.php';
 // require __DIR__ . '/auth.php';

@@ -5,7 +5,7 @@ import Toast, { showToast } from "@/Components/Toast";
 export default function AppLayout({ children, ...meta }) {
     const title = meta.title || "BPTCS";
     const [loading, setLoading] = useState(false);
-    const { flash } = usePage().props;
+    const { flash, base_url } = usePage().props;
     const isActive = (routeName) => route().current(routeName);
     useEffect(() => {
         const start = () => {

@@ -1,5 +1,5 @@
 import React from "react";
-import { usePage, router } from "@inertiajs/react";
+import { usePage, router, Link } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import PageHeader from "@/Components/PageHeader";
 
@@ -36,13 +36,21 @@ export default function Ledger() {
             <div className="p-3 space-y-3">
                 {/* Opening Balance */}
                 <div className="bg-white rounded-md shadow-sm p-3">
-                    <button
+                    {/* <button
                         onClick={handleBack}
                         className="inline-flex items-center gap-1 bg-white text-indigo-500 font-normal px-2 py-1 mb-1 rounded-lg shadow-sm border border-gray-200 hover:bg-indigo-300 active:bg-indigo-500 transition-all duration-150"
                     >
                         <i className="fa-solid fa-arrow-left"></i>
                         <span>Back</span>
-                    </button>
+                    </button> */}
+                    <div className="mb-2">
+                        <Link
+                            href={route("ledger.years")}
+                            className="text-indigo-600 text-sm font-semibold hover:underline"
+                        >
+                            ← Back
+                        </Link>
+                    </div>
                     <h2 className="text-gray-600 text-sm font-semibold">
                         Opening Balance
                     </h2>
