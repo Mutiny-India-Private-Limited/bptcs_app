@@ -1,6 +1,6 @@
 import React from "react";
 import GuestLayout from "@/Layouts/GuestLayout";
-import { Head, useForm, usePage } from "@inertiajs/react";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
 
 export default function Login() {
     const {
@@ -19,12 +19,11 @@ export default function Login() {
         post(route("login"));
     };
 
-    const { errors: propsErrors } = usePage().props;
+    const { errors: propsErrors, base_url } = usePage().props;
     const errors = Object.keys(formErrors).length ? formErrors : propsErrors;
 
     return (
         <GuestLayout title="Login">
-            {/* Wrapper with fade effect while submitting */}
             <div
                 className={`transition-opacity duration-300 ${
                     processing
@@ -32,6 +31,15 @@ export default function Login() {
                         : "opacity-100"
                 }`}
             >
+                {/* Logo */}
+                <div className="flex justify-center">
+                    <img
+                        src={`${base_url}/assets/images/logo.png`} // Replace with your logo path
+                        alt="BPTCS Logo"
+                        className="h-20 w-auto"
+                    />
+                </div>
+
                 <h1 className="text-2xl font-extrabold text-center text-indigo-700 mb-6">
                     Member Login
                 </h1>
@@ -100,9 +108,18 @@ export default function Login() {
                     </button>
                 </form>
 
-                <p className="text-center text-xs text-gray-500 mt-6">
-                    © {new Date().getFullYear()} BPTCS. All rights reserved.
-                </p>
+                {/* Footer */}
+                <div className="mt-6 text-center">
+                    <p className="text-xs text-gray-500">
+                        © {new Date().getFullYear()} BPTCS. All rights reserved.
+                    </p>
+                    <Link
+                        href={route("privacy_policy")}
+                        className="text-xs text-indigo-600 hover:underline mt-1 inline-block"
+                    >
+                        Privacy & Policy
+                    </Link>
+                </div>
             </div>
         </GuestLayout>
     );

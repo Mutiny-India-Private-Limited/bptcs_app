@@ -200,6 +200,7 @@ class MainController extends Controller
         $yearTable = 'cgr_' . str_replace('-', '_', $year);
 
         $summary = getCGRYearSummary($memberNumber, $yearTable);
+        dd($summary);
 
         $deposit = $summary['deposit'] ?? [];
         $interest = $summary['interest'] ?? [];

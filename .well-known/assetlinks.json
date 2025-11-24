@@ -1,0 +1,24 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.get_login_creds",
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.app.mipos",
+      "sha256_cert_fingerprints": [
+        "34:0F:58:E3:E7:74:C1:DD:FE:F0:51:A3:AD:93:F7:DC:86:E6:F2:62:02:95:A5:1E:CC:ED:64:B6:F8:BF:77:91"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "web",
+      "site": "https://pos.mutinyindia.com"
+    }
+  }
+]

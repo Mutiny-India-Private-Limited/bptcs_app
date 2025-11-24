@@ -33,6 +33,11 @@ export default function More() {
             label: "Notification",
             href: route("notification"),
         },
+        // {
+        //     icon: "fa-solid fa-file-lines",
+        //     label: "Privacy & Policy",
+        //     href: "#",
+        // },
     ];
 
     return (

@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('user_device_details', function (Blueprint $table) {
             $table->id();
-            $table->string('email_id');
+            $table->string('email_id')->comment('member_number');
             $table->string('fcm_token');
-            $table->string('fcm_installation_id');
-            $table->string('unique_installation_id');
+            $table->string('device_name')->nullable();
+            $table->string('device_type')->nullable();
             $table->timestamps();
         });
     }

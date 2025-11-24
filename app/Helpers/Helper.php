@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Member;
+use App\Models\UserDeviceDetails;
 use Illuminate\Support\Facades\DB;
 
 if (!function_exists('authMember')) {
@@ -298,4 +299,22 @@ function getCGRAllYearSummary($memberNumber)
     }
 
     return $summary;
+}
+
+if (!function_exists('fcmTokenGet')) {
+    /**
+     * Get the currently logged-in member (from session).
+     *
+     * @return \App\Models\Member|null
+     */
+    function fcmTokenGet()
+    {
+        $auth_member = authMember(['member_number']);
+        if (!$auth_member) {
+            return null;
+        }
+
+        return UserDeviceDetails::where('email_id', $auth_member?->member_number)
+            ->value('fcm_token');
+    }
 }

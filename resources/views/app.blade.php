@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     {{-- <title>BPTCS - Homepage</title> --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('assets/images/favicon.ico') }}" />
 
     <!-- Tailwind CSS CDN -->
     {{-- <script src="https://cdn.tailwindcss.com"></script> --}}
@@ -44,14 +45,19 @@
         }
     </style>
 
-    <!-- Scripts -->
     @routes
     @viteReactRefresh
     @vite(['resources/js/app.jsx', "resources/js/Pages/{$page['component']}.jsx"])
     @inertiaHead
 </head>
 
+
 <body class="font-sans antialiased">
+
+    @php
+        $fcmToken = fcmTokenGet();
+    @endphp
+    <input type="hidden" name="hidden_fcm_token" class="fcmToken" value="{{ $fcmToken }}" />
     @inertia
 </body>
 

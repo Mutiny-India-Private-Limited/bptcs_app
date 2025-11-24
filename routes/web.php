@@ -67,16 +67,17 @@ Route::middleware('auth.member')->group(function () {
 
     Route::get('/blog-details/{id}', [BlogController::class, 'blog_details'])->name('blog_details');
 });
+Route::get('/privacy_policy', fn() => Inertia::render('PrivacyPolicy'))->name('privacy_policy');
 
-Route::get('/migrate', function () {
-    return Artisan::call('migrate');
-});
-Route::get('/seed', function () {
-    return Artisan::call('db:seed');
-});
-Route::get('/storage-link', function () {
-    return Artisan::call('storage:link');
-});
+// Route::get('/migrate', function () {
+//     return Artisan::call('migrate');
+// });
+// Route::get('/seed', function () {
+//     return Artisan::call('db:seed');
+// });
+// Route::get('/storage-link', function () {
+//     return Artisan::call('storage:link');
+// });
 // Route::post('/fire_notifi_add', [GeneralController::class, 'fire_notifi_add'])->name('fire_notifi_add');
 
 
