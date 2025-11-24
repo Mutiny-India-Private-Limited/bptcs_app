@@ -194,39 +194,102 @@ class MainController extends Controller
             'years' => $years,
         ]);
     }
+    // public function ledger($year)
+    // {
+    //     $memberNumber = authMember()->member_number;
+    //     $yearTable = 'cgr_' . str_replace('-', '_', $year);
+
+    //     $summary = getCGRYearSummary($memberNumber, $yearTable);
+    //     $deposit = $summary['deposit'] ?? [];
+    //     $interest = $summary['interest'] ?? [];
+    //     $months = array_keys($deposit[0]['months'] ?? []);
+
+
+    //     $ledgerData = [];
+    //     foreach ($months as $month) {
+    //         $ledgerData[] = [
+    //             'month' => ucfirst($month),
+    //             'cgr' => [
+    //                 'amount' => round(floatval($deposit[0]['months'][$month]['amount'] ?? 0)),
+    //                 'mode' => $deposit[0]['months'][$month]['mode'] ?? null,
+    //                 'date' => $deposit[0]['months'][$month]['date'] ?? null,
+    //             ],
+    //             'interest' => round(floatval($interest[0]['months'][$month] ?? 0)),
+    //         ];
+    //     }
+
+    //     return Inertia::render('Ledger', [
+    //         'year' => $year,
+    //         'openingBalance' => $deposit[0]['opening_amount'] ?? 0,
+    //         'closingBalance' => ($deposit[0]['opening_amount'] ?? 0) + $summary['totalDeposit'] + $summary['totalInterest'],
+    //         'totalDeposit' => $summary['totalDeposit'],
+    //         'totalInterest' => $summary['totalInterest'],
+    //         'totalWithdrawal' => $summary['totalWithdrawal'],
+    //         'closing' => $summary['closing'],
+    //         'ledgerData' => $ledgerData,
+    //     ]);
+    // }
+
     public function ledger($year)
     {
         $memberNumber = authMember()->member_number;
         $yearTable = 'cgr_' . str_replace('-', '_', $year);
 
         $summary = getCGRYearSummary($memberNumber, $yearTable);
-        dd($summary);
-
         $deposit = $summary['deposit'] ?? [];
         $interest = $summary['interest'] ?? [];
-        $months = array_keys($deposit[0]['months'] ?? []);
 
-        $ledgerData = [];
-        foreach ($months as $month) {
-            $ledgerData[] = [
-                'month' => ucfirst($month),
-                'cgr' => [
-                    'amount' => round(floatval($deposit[0]['months'][$month]['amount'] ?? 0)),
-                    'mode' => $deposit[0]['months'][$month]['mode'] ?? null,
-                    'date' => $deposit[0]['months'][$month]['date'] ?? null,
-                ],
-                'interest' => round(floatval($interest[0]['months'][$month] ?? 0)),
-            ];
+        // -------------------------------
+        // GROUP MULTIPLE ENTRIES BY MONTH
+        // -------------------------------
+
+        $groupedLedger = [];
+        $i = 1;
+
+        foreach ($deposit as $entryIndex => $entry) {
+            foreach ($entry['months'] as $month => $data) {
+                // Skip if no data present
+                if (floatval($data['amount']) == 0 && empty($data['mode']) && $i > 1) {
+
+                    continue;
+                }
+
+                if (!isset($groupedLedger[$month])) {
+                    $groupedLedger[$month] = [
+                        'month' => ucfirst($month),
+                        'rows' => [],
+                        'total_interest' => 0,
+                    ];
+                }
+
+                // Add row
+                $groupedLedger[$month]['rows'][] = [
+                    'amount'   => floatval($data['amount']),
+                    'mode'     => $data['mode'],
+                    'date'     => $data['date'],
+                    'interest' => floatval($interest[$entryIndex]['months'][$month] ?? 0),
+                ];
+                // Sum interest
+                $groupedLedger[$month]['total_interest'] += floatval($interest[$entryIndex]['months'][$month] ?? 0);
+            }
+            $i++;
         }
-
+        // Convert associative → indexed array
+        $ledgerData = array_values($groupedLedger);
         return Inertia::render('Ledger', [
             'year' => $year,
             'openingBalance' => $deposit[0]['opening_amount'] ?? 0,
-            'closingBalance' => ($deposit[0]['opening_amount'] ?? 0) + $summary['totalDeposit'] + $summary['totalInterest'],
+            'closingBalance' => ($deposit[0]['opening_amount'] ?? 0)
+                + $summary['totalDeposit']
+                + $summary['totalInterest'],
+            'opening_interest' => $interest[0]['opening_interest'] ?? 0,
+
             'totalDeposit' => $summary['totalDeposit'],
             'totalInterest' => $summary['totalInterest'],
             'totalWithdrawal' => $summary['totalWithdrawal'],
             'closing' => $summary['closing'],
+
+            // send grouped data
             'ledgerData' => $ledgerData,
         ]);
     }
