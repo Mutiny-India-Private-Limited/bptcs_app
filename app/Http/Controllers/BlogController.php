@@ -160,27 +160,30 @@ class BlogController extends Controller
 
         if (!$id) {
             $actionUrl = route('blog_details', ['id' => $blog->id]);
+            $title = 'New Blog Added';
+            $user_id = '0';
+            $description = Str::limit($blog->heading, 20);
             Notification::create([
-                'user_id' => '0',
-                'title' => "New Blog Added",
+                'user_id' => $user_id,
+                'title' => $title,
                 'actionUrl' => $actionUrl,
-                'description' => Str::limit($blog->heading, 20),
+                'description' => $blog->heading,
             ]);
-            // $userTokens = UserDeviceDetails::orderBy('id', 'desc')
-            //     ->get()
-            //     ->unique('email_id')
-            //     ->pluck('fcm_token')
-            //     ->toArray();
+            $userTokens = UserDeviceDetails::orderBy('id', 'desc')
+                ->get()
+                ->unique('member_number')
+                ->pluck('fcm_token')
+                ->toArray();
 
-            // $imageUrl = $blog->featured_image ? asset('storage/' . $blog->featured_image) : null;
+            $imageUrl = $blog->featured_image ? asset('storage/' . $blog->featured_image) : null;
 
-            // SendNotificationsJob::dispatch(
-            //     $userTokens,
-            //     $request->title,
-            //     Str::limit($blog->description, 20),
-            //     $imageUrl,
-            //     $actionUrl
-            // );
+            SendNotificationsJob::dispatch(
+                $userTokens,
+                $title,
+                $description,
+                $imageUrl,
+                $actionUrl
+            );
         }
 
 

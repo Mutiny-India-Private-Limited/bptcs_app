@@ -1,10 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import PageHeader from "@/Components/PageHeader";
 
 export default function Notifications() {
     const { notifications } = usePage().props;
+
+    const Description = ({ text }) => {
+        const [expanded, setExpanded] = useState(false);
+
+        const words = text.split(" ");
+        const isLong = words.length > 20;
+
+        const shownText = expanded ? text : words.slice(0, 20).join(" ");
+
+        return (
+            <p
+                className="text-gray-600 text-xs sm:text-sm mt-1 leading-relaxed "
+                onClick={() => isLong && setExpanded(!expanded)}
+            >
+                {shownText}
+                {isLong && !expanded && " ..."}
+                {isLong && (
+                    <span className="text-blue-600 ml-1 cursor-pointer">
+                        {expanded ? "Show less" : "Show more"}
+                    </span>
+                )}
+            </p>
+        );
+    };
 
     const formatTime = (dateString) => {
         const date = new Date(dateString);
@@ -34,9 +58,9 @@ export default function Notifications() {
                                         </h3>
 
                                         {notif.description && (
-                                            <p className="text-gray-600 text-xs sm:text-sm mt-1 leading-relaxed">
-                                                {notif.description}
-                                            </p>
+                                            <Description
+                                                text={notif.description}
+                                            />
                                         )}
                                     </div>
 

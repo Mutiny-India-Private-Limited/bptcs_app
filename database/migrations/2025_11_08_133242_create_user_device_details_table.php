@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('user_device_details', function (Blueprint $table) {
             $table->id();
-            $table->string('email_id')->comment('member_number');
+            $table->string('member_number');
             $table->string('fcm_token');
+            $table->string('device_id')->nullable();
             $table->string('device_name')->nullable();
             $table->string('device_type')->nullable();
             $table->timestamps();

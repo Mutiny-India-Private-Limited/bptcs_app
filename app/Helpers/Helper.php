@@ -27,13 +27,15 @@ if (!function_exists('authMember')) {
 if (!function_exists('getLedgerYears')) {
     function getLedgerYears()
     {
-        $years = [
-            '2025-2026',
-            '2024-2025',
-            '2023-2024',
-            '2022-2023',
-            '2021-2022',
-        ];
+        $startYear = 2021;
+        $currentYear = (int)date('Y');
+        $endYear = $currentYear + 1;   // e.g., 2025 → 2026
+
+        $years = [];
+
+        for ($y = $endYear - 1; $y >= $startYear; $y--) {
+            $years[] = $y . '-' . ($y + 1);
+        }
 
         return $years;
     }
@@ -301,6 +303,27 @@ function getCGRAllYearSummary($memberNumber)
     return $summary;
 }
 
+function getDashboardSummary($memberNumber)
+{
+    $years = getLedgerYears();
+    // Get the current (latest) ledger year
+    $year = $years[0];
+    $yearTable = 'cgr_' . str_replace('-', '_', $year);
+
+    $totalDeposit = getTotalDeposit($memberNumber, $yearTable);
+    $totalInterest = getTotalInterest($memberNumber, $yearTable);
+    $closing = getClosingAmount($memberNumber, $yearTable);
+    $withdrawal = getTotalWithdrawal($memberNumber, $yearTable);
+
+    return [
+        'totalDeposit' => $totalDeposit,
+        'totalInterest' => $totalInterest,
+        'closing' => $closing,
+        'totalWithdrawal' => $withdrawal
+
+    ];
+}
+
 if (!function_exists('fcmTokenGet')) {
     /**
      * Get the currently logged-in member (from session).
@@ -314,7 +337,7 @@ if (!function_exists('fcmTokenGet')) {
             return null;
         }
 
-        return UserDeviceDetails::where('email_id', $auth_member?->member_number)
+        return UserDeviceDetails::where('member_number', $auth_member?->member_number)
             ->value('fcm_token');
     }
 }

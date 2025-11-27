@@ -23,12 +23,16 @@
 
                 <!-- User Selection -->
                 <div class="col-md-6">
-                    <label for="fcm_token" class="form-label">User <span class="text-danger">*</span></label>
+                    <label for="fcm_token" class="form-label">Member <span class="text-danger">*</span></label>
                     <select id="fcm_token" class="form-select" name="fcm_token">
                         <option value="all">All</option>
                         @foreach ($userDevice as $item)
-                            <option value="{{ $item->fcm_token }}">{{ $item->email_id }}</option>
+                            <option value="{{ $item->fcm_token }}">
+                                {{ $item->member_number }} - {{ $item->member?->name }} - {{ $item->device_name }}
+                                - ({{ $item->updated_at->format('d M Y, H:i') }})
+                            </option>
                         @endforeach
+
                     </select>
                     @error('fcm_token')
                         <small class="text-danger">{{ $message }}</small>

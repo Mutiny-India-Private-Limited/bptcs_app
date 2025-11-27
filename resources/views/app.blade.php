@@ -54,10 +54,6 @@
 
 <body class="font-sans antialiased">
 
-    @php
-        $fcmToken = fcmTokenGet();
-    @endphp
-    <input type="hidden" name="hidden_fcm_token" class="fcmToken" value="{{ $fcmToken }}" />
     @inertia
 </body>
 

@@ -2,12 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Models\Notification;
 use App\Services\FirebaseNotificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
 class SendNotificationsJob implements ShouldQueue
 {
@@ -37,7 +39,6 @@ class SendNotificationsJob implements ShouldQueue
     public function handle(FirebaseNotificationService $firebase)
     {
 
-
         foreach ($this->userTokens as $token) {
             if (!$token) {
                 continue;
@@ -51,5 +52,11 @@ class SendNotificationsJob implements ShouldQueue
                 $this->actionUrl
             );
         }
+        //   Notification::create([
+        //     'user_id' => '0',
+        //     'title' => $this->title,
+        //     'actionUrl' =>  $this->actionUrl,
+        //     'description' => Str::limit($this->title, 20),
+        // ]);
     }
 }

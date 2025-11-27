@@ -74,7 +74,11 @@ class LoginController extends Controller
             ],
         ]);
 
-        return redirect()->route('home')->with('success', 'Welcome back! ' . $member->name);
+
+        // return redirect()->route('home')->with('success', 'Welcome back! ' . $member->name);
+        return redirect()->route('home')
+            ->with('logged_in_from_login', true)
+            ->with('success', 'Welcome back! ' . $member->name);
     }
 
     public function logout(Request $request)

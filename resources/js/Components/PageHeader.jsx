@@ -17,7 +17,7 @@ export default function PageHeader({ title, subtitle }) {
             ></div>
 
             {/* Content */}
-            <h1 className="relative z-10 text-3xl font-extrabold tracking-tight">
+            <h1 className="relative z-10 text-2xl font-extrabold tracking-tight">
                 {title}
             </h1>
 

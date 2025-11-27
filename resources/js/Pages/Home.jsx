@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import AppLayout from "@/Layouts/AppLayout";
 import PageHeader from "@/Components/PageHeader";
 import MetricCard from "@/Components/MetricCard";
-import { usePage } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import { Bar } from "react-chartjs-2";
 
 import {
@@ -19,6 +19,7 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 export default function Home() {
     const { props } = usePage();
     const { totals, yearlySummary = [], lastUpdated, member } = props;
+    const { logged_in_page } = props;
 
     const [selectedYear, setSelectedYear] = useState(
         yearlySummary?.[0]?.year || ""
@@ -134,8 +135,28 @@ export default function Home() {
 
     return (
         <AppLayout title="Homepage">
+            <input
+                type="hidden"
+                name="from_login_redirect"
+                id="from_login_redirect"
+                value={logged_in_page ? "true" : "false"}
+            />
+
+            <input
+                type="hidden"
+                name="hidden_fcm_token"
+                id="hidden_fcm_token"
+                value={member?.fcmToken ?? ""}
+            />
+            <input
+                type="hidden"
+                name="hidden_member_number"
+                id="hidden_member_number"
+                value={member?.member_number}
+            />
+
             <PageHeader
-                title={`Welcome, ${member?.name || "User"}!`}
+                title={`Hello, ${member?.name || "User"}!`}
                 subtitle="Your financial overview at a glance"
             />
 
@@ -147,7 +168,7 @@ export default function Home() {
             </div>
 
             {/* Tabs for charts */}
-            <div className="p-6 bg-white  border border-gray-200 shadow-md mb-6">
+            <div className="p-6 bg-white border border-gray-200 shadow-md mb-6">
                 {/* Tabs / Nav Carousel */}
                 <div className="flex justify-center relative mb-6">
                     <div className="flex space-x-4">
@@ -233,39 +254,47 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* Metric Cards */}
-            <div className="grid grid-cols-2 gap-4 p-4">
-                <MetricCard
-                    title="Total Deposits"
-                    value={totals.deposit.toLocaleString()}
-                    color="green"
-                />
-                <MetricCard
-                    title="Total Withdrawal"
-                    value={totals.withdrawal.toLocaleString()}
-                    color="red"
-                />
-                <MetricCard
-                    title="Total Interest"
-                    value={totals.interest.toLocaleString()}
-                    color="blue"
-                />
-                <MetricCard
-                    title="Total Savings"
-                    value={totals.closing.toLocaleString()}
-                    color="cyan"
-                />
-                <MetricCard
-                    title="Total Share"
-                    value={totals.share_amount.toLocaleString()}
-                    color="yellow"
-                />
-                <MetricCard
-                    title="Share Details"
-                    value={totals.share_details}
-                    color="gray"
-                    valueSize="text-xs"
-                />
+            <div className="">
+                {/* Metric Cards */}
+                <div className="text-center pb-3 border-b border-gray-100 mx-4">
+                    <p className="text-sm text-gray-600 font-medium">
+                        Showing data for the current financial year
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 p-4">
+                    <MetricCard
+                        title="Total Deposits"
+                        value={totals.deposit.toLocaleString()}
+                        color="green"
+                    />
+                    <MetricCard
+                        title="Total Withdrawal"
+                        value={totals.withdrawal.toLocaleString()}
+                        color="red"
+                    />
+                    <MetricCard
+                        title="Total Interest"
+                        value={totals.interest.toLocaleString()}
+                        color="blue"
+                    />
+                    <MetricCard
+                        title="Total Savings"
+                        value={totals.closing.toLocaleString()}
+                        color="cyan"
+                    />
+                    <MetricCard
+                        title="Total Share"
+                        value={totals.share_amount.toLocaleString()}
+                        color="yellow"
+                    />
+                    <MetricCard
+                        title="Share Details"
+                        value={totals.share_details}
+                        color="gray"
+                        valueSize="text-xs"
+                    />
+                </div>
             </div>
         </AppLayout>
     );

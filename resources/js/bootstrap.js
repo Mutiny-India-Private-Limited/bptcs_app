@@ -3,6 +3,18 @@ window.axios = axios;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
+import { router } from "@inertiajs/react";
+
+// Attach globally
+window.Inertia = { router };
+
+// if (window.Inertia && window.Inertia.router) {
+//     // Listen to Inertia navigation events
+//     window.Inertia.router.on("navigate", (event) => {
+//         alert(`Page changed to: ${event.detail.page.url}`);
+//         // event.detail.page contains the new page data
+//     });
+// }
 // // Function to show logs on the mobile screen
 // // Function to show logs directly on screen
 // function logOnScreen(msg) {

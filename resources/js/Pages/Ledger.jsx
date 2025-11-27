@@ -139,7 +139,7 @@ export default function Ledger() {
                     </table>
                 </div> */}
                 {/* Ledger Table */}
-                <div className="bg-white shadow-sm rounded-md overflow-hidden">
+                <div className="bg-white shadow-sm rounded-md overflow-auto">
                     <table className="w-full text-xs sm:text-sm text-gray-700 border-collapse border border-gray-200">
                         <thead className="bg-indigo-600 text-white">
                             <tr>

@@ -8,6 +8,7 @@ use App\Models\UserDeviceDetails;
 use App\Services\FirebaseNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class FirebaseController extends Controller
@@ -27,164 +28,79 @@ class FirebaseController extends Controller
     public function fireSendNotification(Request $request)
 
     {
-        Notification::create([
-            'user_id' => '0',
-            'title' => "New Notification Added",
-            'actionUrl' => 'https://app.bptcspatna.com/public/notifications',
-            'description' => $request->body,
-        ]);
-        return back()->with('success', 'Notification sent successfully.');
+        // Notification::create([
+        //     'user_id' => '0',
+        //     'title' => "New Notification Added",
+        //     'actionUrl' => 'https://app.bptcspatna.com/public/notifications',
+        //     'description' => $request->body,
+        // ]);
+        // return back()->with('success', 'Notification sent successfully.');
 
-        dd($request->all());
+        // dd($request->all());
 
         $validator = Validator::make($request->all(), [
-
             'fcm_token' => 'required',
-
             'title' => 'required|string|max:255',
-
             'body' => 'required|string|max:1000',
-
             'image' => 'nullable|image|max:10240',
-
             'actionUrl' => 'required|url',
-
         ]);
 
-
-
         if ($validator->fails()) {
-
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-
-
         // Retrieve the validated data
-
         $validatedData = $validator->validated();
-
         $imageUrl = '';
-
         $imagePath = '';
 
         if ($request->hasFile('image')) {
-
             $image = $request->file('image');
-
             $imageName = time() . '-' . $image->getClientOriginalName();
-
             $imagePath = public_path('assets/image/notifications/' . $imageName);
-
             // Move the image to the public directory
-
             $image->move(public_path('assets/image/notifications'), $imageName);
-
             // Generate the URL to the image
-
             $imageUrl = asset('assets/image/notifications/' . $imageName);
         }
 
-
-
-
         // Get FCM tokens (either a specific token or all users)
-
         if ($request->fcm_token == 'all') {
-
+            $user_id = '0';
             $userTokens = UserDeviceDetails::orderBy('id', 'desc')
-
                 ->get()
-
-                ->unique('email_id')
-
+                ->unique('member_number')
                 ->pluck('fcm_token')
-
                 ->toArray();
         } else {
-
+            $user_id = UserDeviceDetails::where('fcm_token', $request->fcm_token)->value('member_number');
             $userTokens = [$request->fcm_token];
         }
 
-        // Notification::create([
-        //     'user_id' => '0',
-        //     'title' => $request->title,
-        //     'actionUrl' => $request->actionUrl,
-        //     'image' => $imageUrl,
-        //     'description' => $request->body,
-        // ]);
+        Notification::create([
+            'user_id' => $user_id,
+            'title' => $request->title,
+            'actionUrl' =>   $request->actionUrl,
+            'description' => ($request->body),
+        ]);
 
-        // dd($userTokens);
         SendNotificationsJob::dispatch(
             $userTokens,
             $request->title,
-            $request->body,
+            Str::limit($request->body, 20),
             $imageUrl,
             $request->actionUrl
         );
-        // Notification::create([
-        //     'user_id' => '0',
-        //     'title' => $request->title,
-        //     'actionUrl' => $request->actionUrl,
-        //     'image' => $imageUrl,
-        //     'description' => $request->body,
-        // ]);
 
-        // foreach ($userTokens as $token) {
-
-        //     if (!$token || $token == null) {
-
-        //         continue;
-        //     }
-
-        //     // try {
-
-        //     $this->firebaseNotificationService->sendNotification(
-
-        //         $token,
-
-        //         $request->title,
-
-        //         $request->body,
-
-        //         $imageUrl,
-
-        //         $request->actionUrl
-
-        //     );
-
-
-
-        //     $userDevice = UserDeviceDetails::where('fcm_token', $token)->first();
-
-        //     $notiLog = FirebaseNotiLog::create([
-
-        //         'user_id' => $userDevice->email_id,
-
-        //         'title' => $validatedData['title'],
-
-        //         'description' => $validatedData['body'],
-
-        //         'image' => $imageUrl,
-
-        //         'actionUrl' => $validatedData['actionUrl'],
-
-        //     ]);
-
-
-        // }
-
-
-
-        return back()->with('success', 'Notification sent successfully to selected users.');
+        return back()->with('success', 'Notification in process');
     }
-
 
 
     public function fire_notifi_add()
     {
 
-        $userDevice = UserDeviceDetails::orderBy("id", "desc")->get()->unique("email_id");
+        $userDevice = UserDeviceDetails::orderBy("id", "desc")->get()->unique("member_number");
         return view('admin.notification.firebase_add', compact('userDevice'));
 
         // return Inertia::render('SendNotification', ['userDevice' => $userDevice]);

@@ -19,7 +19,7 @@ class MainController extends Controller
     {
         $member = authMember();
         $memberNumber = $member->member_number;
-
+        $fcmToken = fcmTokenGet();
         $cacheKey = "dashboard_summary_{$memberNumber}";
 
         // Data change after 1hr ,refresh it from setting to reset
@@ -54,11 +54,13 @@ class MainController extends Controller
 
             usort($yearlySummary, fn($a, $b) => strcmp($b['year'], $a['year']));
 
+            //To get current financial year stats
+            $dashboardStats = getDashboardSummary($memberNumber);
             $totals = [
-                'deposit' => array_sum(array_column($yearlySummary, 'totalDeposit')),
-                'withdrawal' => array_sum(array_column($yearlySummary, 'totalWithdrawal')),
-                'interest' => array_sum(array_column($yearlySummary, 'totalInterest')),
-                'closing' => array_sum(array_column($yearlySummary, 'closing')),
+                'deposit' => $dashboardStats['totalDeposit'],
+                'withdrawal' => $dashboardStats['totalWithdrawal'],
+                'interest' => $dashboardStats['totalInterest'],
+                'closing' => $dashboardStats['closing'],
                 'share_amount' => $share_amount,
                 'share_details' => $share_details,
             ];
@@ -70,72 +72,16 @@ class MainController extends Controller
             ];
         });
 
+        $member['fcmToken'] =  $fcmToken;
         return Inertia::render('Home', [
             'member' => $member,
             'yearlySummary' => $data['yearlySummary'],
             'totals' => $data['totals'],
             // show user exactly when cache was generated
             'lastUpdated' => \Carbon\Carbon::parse($data['cached_at'])->format('d M Y, h:i A'),
-
+            'logged_in_page' => session()->pull('logged_in_from_login', false),
         ]);
     }
-
-    // public function home(Request $request)
-    // {
-    //     $member = authMember();
-    //     $memberNumber = $member->member_number;
-
-    //     // Get raw yearly summaries for the dashboard
-    //     $rawSummary = $this->getCGRAllYearSummary($memberNumber);
-
-    //     $share_amount = $this->getTotalShareAmount($memberNumber);
-    //     $share_details = $this->getTotalShareDetails($memberNumber);
-
-    //     $yearlySummary = [];
-    //     foreach ($rawSummary as $financialYear => $data) {
-    //         // Extract deposits and interests per month safely
-    //         $depositMonths = $data['deposit'][0]['months'] ?? [];
-    //         $interestMonths = $data['interest'][0]['months'] ?? [];
-
-    //         $months = [];
-    //         foreach ($depositMonths as $monthName => $monthData) {
-    //             $months[] = [
-    //                 'month' => $monthName,
-    //                 'deposit' => floatval($monthData['amount'] ?? 0),
-    //                 'interest' => floatval($interestMonths[$monthName] ?? 0),
-    //             ];
-    //         }
-
-    //         $yearlySummary[] = [
-    //             'year' => $financialYear,
-    //             'totalDeposit' => floatval($data['totalDeposit'] ?? 0),
-    //             'totalWithdrawal' => floatval($data['totalWithdrawal'] ?? 0),
-    //             'totalInterest' => floatval($data['totalInterest'] ?? 0),
-    //             'closing' => floatval($data['closing'] ?? 0),
-    //             'months' => $months,
-    //         ];
-    //     }
-
-    //     // Sort newest first
-    //     usort($yearlySummary, fn($a, $b) => strcmp($b['year'], $a['year']));
-
-    //     // Compute totals for cards
-    //     $totals = [
-    //         'deposit' => array_sum(array_column($yearlySummary, 'totalDeposit')),
-    //         'withdrawal' => array_sum(array_column($yearlySummary, 'totalWithdrawal')),
-    //         'interest' => array_sum(array_column($yearlySummary, 'totalInterest')),
-    //         'closing' => array_sum(array_column($yearlySummary, 'closing')),
-    //         'share_amount' => $share_amount,
-    //         'share_details' => $share_details,
-    //     ];
-
-    //     return Inertia::render('Home', [
-    //         'member' => $member,
-    //         'yearlySummary' => $yearlySummary,
-    //         'totals' => $totals,
-    //         'lastUpdated' => now()->format('d-m-Y'),
-    //     ]);
-    // }
 
     public function profile(Request $request)
     {
@@ -296,7 +242,7 @@ class MainController extends Controller
 
     public function notifications()
     {
-        $id = authMember(['sno']);
+        $id = authMember(['member_number'])->member_number;
         $notifications = Notification::orderBy('id', 'desc')->whereIn('user_id', ['0', $id])->where('status', '1')->get();
 
         return Inertia::render('Notification', [

@@ -40,8 +40,8 @@ Route::middleware('guest.member')->group(function () {
 
 
 Route::middleware('auth.member')->group(function () {
-
-    Route::get('/', [MainController::class, 'home'])->name('home');
+    Route::redirect('/', 'home');
+    Route::get('/home', [MainController::class, 'home'])->name('home');
 
     Route::get('/profile', [MainController::class, 'profile'])->name('profile');
 
