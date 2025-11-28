@@ -129,16 +129,20 @@ class FirebaseNotificationService
             // Send the message
             $messaging->send($message);
             Log::info("Notification successfully sent", ['token' => $token]);
+            return true;
         } catch (InvalidMessage $e) {
             if ($e->getMessage() === 'UNREGISTERED' || $e->getMessage() === 'INVALID_ARGUMENT') {
                 Log::warning("FCM token expired or invalid for user", ['token' => $token, 'error' => $e->getMessage()]);
+                return false;
             } else {
                 Log::error("InvalidMessage exception occurred", ['token' => $token, 'error' => $e->getMessage()]);
-                throw $e;
+                return false;
+                // throw $e;
             }
         } catch (\Exception $e) {
             Log::error("Exception while sending notification", ['token' => $token, 'error' => $e->getMessage()]);
-            throw $e;
+            return false;
+            // throw $e;
         }
     }
 }

@@ -12,11 +12,18 @@ use App\Models\BlogManagement;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendNotificationsJob;
 use App\Models\UserDeviceDetails;
+use App\Services\FirebaseNotificationService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class BlogController extends Controller
 {
+    protected $firebaseNotificationService;
+
+    public function __construct(FirebaseNotificationService $firebaseNotificationService)
+    {
+        $this->firebaseNotificationService = $firebaseNotificationService;
+    }
     public function blogManage()
     {
         $data = BlogManagement::orderBy('id', 'desc')->get();
@@ -162,8 +169,8 @@ class BlogController extends Controller
             $actionUrl = route('blog_details', ['id' => $blog->id]);
             $title = 'New Blog Added';
             $user_id = '0';
-            $description = Str::limit($blog->heading, 20);
-            Notification::create([
+            $description = Str::limit($blog->heading, 30);
+            $notification = Notification::create([
                 'user_id' => $user_id,
                 'title' => $title,
                 'actionUrl' => $actionUrl,
@@ -177,13 +184,34 @@ class BlogController extends Controller
 
             $imageUrl = $blog->featured_image ? asset('storage/' . $blog->featured_image) : null;
 
-            SendNotificationsJob::dispatch(
-                $userTokens,
-                $title,
-                $description,
-                $imageUrl,
-                $actionUrl
-            );
+            $hasError = false;
+            foreach ($userTokens as $token) {
+                if (!$token) {
+                    continue;
+                }
+                $sent = $this->firebaseNotificationService->sendNotification(
+                    $token,
+                    $title,
+                    $description,
+                    $imageUrl,
+                    $actionUrl
+                );
+
+                if (!$sent) {
+                    $hasError = true;
+                }
+            }
+            if ($hasError) {
+                $notification->update(['status' => '0']);
+            }
+
+            // SendNotificationsJob::dispatch(
+            //     $userTokens,
+            //     $title,
+            //     $description,
+            //     $imageUrl,
+            //     $actionUrl
+            // );
         }
 
 

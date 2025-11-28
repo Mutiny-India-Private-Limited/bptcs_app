@@ -24,11 +24,12 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>User</th>
+                            <th>Member</th>
                             <th>Image</th>
                             <th>Title</th>
                             <th>Action URL</th>
                             <th>Description</th>
+                            <th>Status</th>
                             <th>Created At</th>
                         </tr>
                     </thead>
@@ -47,7 +48,15 @@
                                 <td>{{ $item->title }}</td>
                                 <td>{{ $item->actionUrl }}</td>
                                 <td>{{ $item->description }}</td>
-                                <td>{{ date('d/M/Y', strtotime($item->created_at)) }}</td>
+                                <td>
+                                    @if ($item->status == 1)
+                                        <span style="color: green; font-weight: bold;">Success</span>
+                                    @else
+                                        <span style="color: red; font-weight: bold;">Failed</span>
+                                    @endif
+                                </td>
+
+                                <td>{{ date('d-M-Y', strtotime($item->created_at)) }}</td>
                             </tr>
                         @endforeach
                     </tbody>

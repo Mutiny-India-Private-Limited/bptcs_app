@@ -70,30 +70,58 @@ class FirebaseController extends Controller
             $user_id = '0';
             $userTokens = UserDeviceDetails::orderBy('id', 'desc')
                 ->get()
-                ->unique('member_number')
+                // ->unique('member_number')
                 ->pluck('fcm_token')
                 ->toArray();
         } else {
             $user_id = UserDeviceDetails::where('fcm_token', $request->fcm_token)->value('member_number');
-            $userTokens = [$request->fcm_token];
+            $userTokens = UserDeviceDetails::where('member_number', $user_id)
+                ->get()
+                ->pluck('fcm_token')
+                ->toArray();
+            // $userTokens = [$request->fcm_token];
         }
 
-        Notification::create([
+        $notification = Notification::create([
             'user_id' => $user_id,
             'title' => $request->title,
             'actionUrl' =>   $request->actionUrl,
             'description' => ($request->body),
         ]);
 
-        SendNotificationsJob::dispatch(
-            $userTokens,
-            $request->title,
-            Str::limit($request->body, 20),
-            $imageUrl,
-            $request->actionUrl
-        );
+        $hasError = false;
 
-        return back()->with('success', 'Notification in process');
+        foreach ($userTokens as $token) {
+            if (!$token) {
+                continue;
+            }
+            $sent = $this->firebaseNotificationService->sendNotification(
+                $token,
+                $request->title,
+                Str::limit($request->body, 30),
+                $imageUrl,
+                $request->actionUrl
+            );
+
+            if (!$sent) {
+                $hasError = true;
+            }
+        }
+
+        // SendNotificationsJob::dispatch(
+        //     $userTokens,
+        //     $request->title,
+        //     Str::limit($request->body, 20),
+        //     $imageUrl,
+        //     $request->actionUrl
+        // );
+        // Update notification status based on result
+        if ($hasError) {
+            $notification->update(['status' => '0']);
+            return back()->with('error', 'Some notifications failed to send.');
+        }
+
+        return back()->with('success', 'Notification sent successfully');
     }
 
 

@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import AppLayout from "@/Layouts/AppLayout";
 import PageHeader from "@/Components/PageHeader";
 import MetricCard from "@/Components/MetricCard";
-import { Head, usePage } from "@inertiajs/react";
+import { Head, router, useForm, usePage } from "@inertiajs/react";
 import { Bar } from "react-chartjs-2";
 
 import {
@@ -13,13 +13,19 @@ import {
     Tooltip,
     Legend,
 } from "chart.js";
+import axios from "axios";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 export default function Home() {
     const { props } = usePage();
-    const { totals, yearlySummary = [], lastUpdated, member } = props;
-    const { logged_in_page } = props;
+    const {
+        totals,
+        yearlySummary = [],
+        lastUpdated,
+        member,
+        logged_in_page,
+    } = props;
 
     const [selectedYear, setSelectedYear] = useState(
         yearlySummary?.[0]?.year || ""
@@ -133,28 +139,44 @@ export default function Home() {
         },
     };
 
+    useEffect(() => {
+        // Call when log in
+        if (logged_in_page !== true || !window?.AppInterface) return;
+
+        function fetchTokenAndSave() {
+            const memberNumber = window.AppInterface.setLoggedInUser(
+                member?.member_number
+            );
+            let response = JSON.parse(window.AppInterface.getDeviceDetails?.());
+
+            if (!response) {
+                console.warn("FCM token not found");
+                return;
+            }
+            let deviceData = response;
+
+            axios
+                .post(route("api.saveDeviceDetails"), {
+                    member_number: member?.member_number ?? null,
+                    fcm_token: deviceData.fcm_token,
+                    device_name: deviceData.device_name,
+                    device_type: deviceData.device_type,
+                    device_id: deviceData.device_id,
+                })
+                .then(() => console.log("Success"))
+                .catch((err) => {
+                    const msg =
+                        err.response?.data?.error ||
+                        "An unknown error occurred";
+                    console.error(msg);
+                });
+        }
+
+        fetchTokenAndSave();
+    }, []);
+
     return (
         <AppLayout title="Homepage">
-            <input
-                type="hidden"
-                name="from_login_redirect"
-                id="from_login_redirect"
-                value={logged_in_page ? "true" : "false"}
-            />
-
-            <input
-                type="hidden"
-                name="hidden_fcm_token"
-                id="hidden_fcm_token"
-                value={member?.fcmToken ?? ""}
-            />
-            <input
-                type="hidden"
-                name="hidden_member_number"
-                id="hidden_member_number"
-                value={member?.member_number}
-            />
-
             <PageHeader
                 title={`Hello, ${member?.name || "User"}!`}
                 subtitle="Your financial overview at a glance"

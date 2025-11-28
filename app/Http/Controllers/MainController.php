@@ -19,7 +19,6 @@ class MainController extends Controller
     {
         $member = authMember();
         $memberNumber = $member->member_number;
-        $fcmToken = fcmTokenGet();
         $cacheKey = "dashboard_summary_{$memberNumber}";
 
         // Data change after 1hr ,refresh it from setting to reset
@@ -72,7 +71,6 @@ class MainController extends Controller
             ];
         });
 
-        $member['fcmToken'] =  $fcmToken;
         return Inertia::render('Home', [
             'member' => $member,
             'yearlySummary' => $data['yearlySummary'],

@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class SendNotificationsJob implements ShouldQueue
@@ -38,7 +39,7 @@ class SendNotificationsJob implements ShouldQueue
      */
     public function handle(FirebaseNotificationService $firebase)
     {
-
+        Log::info("Firebase notification job started, total devices : " . count($this->userTokens));
         foreach ($this->userTokens as $token) {
             if (!$token) {
                 continue;

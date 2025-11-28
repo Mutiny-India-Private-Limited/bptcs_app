@@ -17,20 +17,37 @@ window.Inertia = { router };
 // }
 // // Function to show logs on the mobile screen
 // // Function to show logs directly on screen
-// function logOnScreen(msg) {
-//     const el = document.createElement('div');
-//     el.textContent = msg;
-//     el.style.background = 'rgba(255,255,255,0.9)';
-//     el.style.color = '#000';
-//     el.style.position = 'fixed';
-//     el.style.bottom = '0';
-//     el.style.left = '0';
-//     el.style.padding = '4px 8px';
-//     el.style.fontSize = '12px';
-//     el.style.zIndex = '9999';
-//     el.style.borderTop = '1px solid #ccc';
-//     document.body.appendChild(el);
-// }
+function logOnScreen(msg) {
+    const el = document.createElement('div');
+    el.textContent = msg;
+    el.style.background = 'rgba(255,255,255,0.9)';
+    el.style.color = '#000';
+    el.style.position = 'fixed';
+    el.style.top = '0';
+    el.style.left = '0';
+    el.style.padding = '4px 8px';
+    el.style.fontSize = '12px';
+    el.style.zIndex = '9999';
+    el.style.borderTop = '1px solid #ccc';
+    document.body.appendChild(el);
+}
+// window.addEventListener('DOMContentLoaded', async () => {
+//     if (window.AppInterface) {
+//         if (window.AppInterface.getDeviceDetails()) {
+//             logOnScreen("getDeviceDetails Detected: ");
+//         } else {
+//             logOnScreen("getDeviceDetails NOt Detected: ");
+//         }
+
+//         // const token = window.AppInterface.getDeviceDetails();
+//         // const token = window.AppInterface.setLoggedInUser(id);
+//         // const token = window.AppInterface.getLoggedInUser();
+//         logOnScreen("App Detected: ");
+
+//     } else {
+//         logOnScreen("App Not Detected");
+//     }
+// });
 
 // window.addEventListener('DOMContentLoaded', async () => {
 //     // Step 1: Check if Capacitor exists
