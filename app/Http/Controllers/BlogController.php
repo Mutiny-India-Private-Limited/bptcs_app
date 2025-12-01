@@ -178,29 +178,26 @@ class BlogController extends Controller
             ]);
             $userTokens = UserDeviceDetails::orderBy('id', 'desc')
                 ->get()
-                ->unique('member_number')
+                // ->unique('member_number')
                 ->pluck('fcm_token')
                 ->toArray();
 
             $imageUrl = $blog->featured_image ? asset('storage/' . $blog->featured_image) : null;
 
             $hasError = false;
-            foreach ($userTokens as $token) {
-                if (!$token) {
-                    continue;
-                }
-                $sent = $this->firebaseNotificationService->sendNotification(
-                    $token,
-                    $title,
-                    $description,
-                    $imageUrl,
-                    $actionUrl
-                );
 
-                if (!$sent) {
-                    $hasError = true;
-                }
+            $sent = $this->firebaseNotificationService->sendNotification(
+                $userTokens,
+                $title,
+                $description,
+                $imageUrl,
+                $actionUrl
+            );
+
+            if (!$sent) {
+                $hasError = true;
             }
+
             if ($hasError) {
                 $notification->update(['status' => '0']);
             }

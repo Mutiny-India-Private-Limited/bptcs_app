@@ -91,10 +91,15 @@ class FirebaseNotificationService
     //     }
     // }
 
-    public function sendNotification($token, $title, $body, $imageUrl, $actionUrl)
+    public function sendNotification($tokens, $title, $body, $imageUrl, $actionUrl)
     {
         try {
-            Log::info("Preparing to send notification", ['token' => $token, 'title' => $title, 'body' => $body]);
+            $totalTokens = count($tokens);
+            Log::info("Preparing to send notification", [
+                'tokens_count' => $totalTokens,
+                'title' => $title,
+                'body' => $body
+            ]);
 
             $messaging = $this->firebase->createMessaging();
 
@@ -120,27 +125,57 @@ class FirebaseNotificationService
             // Log::info("Data payload prepared", ['data' => $data]);
 
             // Create the message with the target token, notification, and Android configuration
-            $message = \Kreait\Firebase\Messaging\CloudMessage::withTarget('token', $token)
+            $message = \Kreait\Firebase\Messaging\CloudMessage::new()
                 ->withNotification($notification)
                 ->withAndroidConfig($androidConfig)
                 ->withData($data);
+
             Log::info("Cloud message prepared", ['message' => $message]);
 
-            // Send the message
-            $messaging->send($message);
-            Log::info("Notification successfully sent", ['token' => $token]);
+            // Split tokens into chunks of 500
+            $chunks = array_chunk($tokens, 500);
+
+            $totalSuccess = 0;
+            $totalFailure = 0;
+
+            foreach ($chunks as $index => $chunk) {
+                Log::info("Sending batch", [
+                    "batch" => $index + 1,
+                    "count" => count($chunk)
+                ]);
+
+                $report = $messaging->sendMulticast($message, $chunk);
+
+                $totalSuccess += $report->successes()->count();
+                $totalFailure += $report->failures()->count();
+            }
+
+            Log::info("Finished sending all batches", [
+                'total_tokens' => $totalTokens,
+                'total_success' => $totalSuccess,
+                'total_failure' => $totalFailure
+            ]);
             return true;
         } catch (InvalidMessage $e) {
             if ($e->getMessage() === 'UNREGISTERED' || $e->getMessage() === 'INVALID_ARGUMENT') {
-                Log::warning("FCM token expired or invalid for user", ['token' => $token, 'error' => $e->getMessage()]);
+                Log::warning("FCM token expired or invalid", [
+                    'tokens_count' => count($tokens),
+                    'error' => $e->getMessage()
+                ]);
                 return false;
             } else {
-                Log::error("InvalidMessage exception occurred", ['token' => $token, 'error' => $e->getMessage()]);
+                Log::error("InvalidMessage exception occurred", [
+                    'tokens_count' => count($tokens),
+                    'error' => $e->getMessage()
+                ]);
                 return false;
                 // throw $e;
             }
         } catch (\Exception $e) {
-            Log::error("Exception while sending notification", ['token' => $token, 'error' => $e->getMessage()]);
+            Log::error("Exception while sending notification", [
+                'tokens_count' => count($tokens),
+                'error' => $e->getMessage()
+            ]);
             return false;
             // throw $e;
         }

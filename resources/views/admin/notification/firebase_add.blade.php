@@ -27,8 +27,13 @@
                     <select id="fcm_token" class="form-select" name="fcm_token">
                         <option value="all">All</option>
                         @foreach ($userDevice as $item)
+                            @php
+                                $deviceCount = $item->memberDevices->count();
+                            @endphp
                             <option value="{{ $item->fcm_token }}">
-                                {{ $item->member_number }} - {{ $item->member?->name }} - {{ $item->device_name }}
+                                {{ $item->member_number }} -
+                                {{ $item->member?->name }} -
+                                {{ $item->device_name }} ({{ $deviceCount }} device{{ $deviceCount > 1 ? 's' : '' }})
                                 - ({{ $item->updated_at->format('d M Y, H:i') }})
                             </option>
                         @endforeach

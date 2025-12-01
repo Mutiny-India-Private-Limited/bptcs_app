@@ -12,4 +12,12 @@ class UserDeviceDetails extends Model
     {
         return $this->belongsTo(Member::class, 'member_number', 'member_number');
     }
+    public function memberDevices()
+    {
+        return $this->hasMany(
+            UserDeviceDetails::class,
+            'member_number',
+            'member_number'
+        );
+    }
 }

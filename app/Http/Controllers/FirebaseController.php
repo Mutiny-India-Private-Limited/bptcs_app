@@ -91,22 +91,18 @@ class FirebaseController extends Controller
 
         $hasError = false;
 
-        foreach ($userTokens as $token) {
-            if (!$token) {
-                continue;
-            }
-            $sent = $this->firebaseNotificationService->sendNotification(
-                $token,
-                $request->title,
-                Str::limit($request->body, 30),
-                $imageUrl,
-                $request->actionUrl
-            );
+        $sent = $this->firebaseNotificationService->sendNotification(
+            $userTokens,
+            $request->title,
+            Str::limit($request->body, 30),
+            $imageUrl,
+            $request->actionUrl
+        );
 
-            if (!$sent) {
-                $hasError = true;
-            }
+        if (!$sent) {
+            $hasError = true;
         }
+
 
         // SendNotificationsJob::dispatch(
         //     $userTokens,
