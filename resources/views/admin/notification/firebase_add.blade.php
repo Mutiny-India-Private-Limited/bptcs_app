@@ -17,6 +17,13 @@
         </div>
 
         <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+                <h5 class="mb-0">Total Devices</h5>
+                <span class="badge bg-primary ms-2 px-3 " style="font-size: 1rem;">
+                    {{ count($userDevice) }}
+                </span>
+            </div>
+
             <form class="row g-3" method="POST" action="{{ route('admin.notifications.store') }}"
                 enctype="multipart/form-data">
                 @csrf

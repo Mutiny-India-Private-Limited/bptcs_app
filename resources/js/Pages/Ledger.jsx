@@ -62,8 +62,9 @@ export default function Ledger() {
                             </div>
 
                             <div>
-                                <h2 className="text-gray-600 text-xs sm:text-sm font-semibold">
-                                    Opening Interest
+                                <h2 className="text-gray-600 text-xs  font-semibold">
+                                    Interest on Opening Amount{" "}
+                                    <span className="text-red-900 ">*</span>
                                 </h2>
                                 <p className="text-indigo-700 text-base font-bold mt-1">
                                     ₹{" "}
@@ -76,68 +77,6 @@ export default function Ledger() {
                     </div>
                 </div>
 
-                {/* Ledger Table */}
-                {/*    <div className="bg-white shadow-sm rounded-md overflow-hidden">
-                    <table className="w-full text-xs sm:text-sm text-gray-700">
-                        <thead className="bg-indigo-600 text-white">
-                            <tr>
-                                <th className="py-2 px-3 text-left">Month</th>
-                                <th className="py-2 px-3 text-left">CGR</th>
-                                <th className="py-2 px-3 text-left">Mode</th>
-                                <th className="py-2 px-3 text-left">
-                                    Interest
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {ledgerData.length > 0 ? (
-                                ledgerData.map((row, idx) => (
-                                    <tr
-                                        key={idx}
-                                        className={
-                                            idx % 2 ? "bg-gray-50" : "bg-white"
-                                        }
-                                    >
-                                        <td className="py-2 px-3 font-medium">
-                                            {row.month}
-                                        </td>
-                                        <td className="py-2 px-3">
-                                            <p>
-                                                ₹{" "}
-                                                {Number(
-                                                    row.cgr?.amount ?? 0
-                                                ).toLocaleString()}
-                                            </p>
-                                            {row.cgr?.date && (
-                                                <p className="text-[10px] text-gray-500">
-                                                    {row.cgr.date}
-                                                </p>
-                                            )}
-                                        </td>
-                                        <td className="py-2 px-3">
-                                            {row.cgr?.mode ?? "-"}
-                                        </td>
-                                        <td className="py-2 px-3">
-                                            ₹{" "}
-                                            {Number(
-                                                row.interest ?? 0
-                                            ).toLocaleString()}
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td
-                                        colSpan="4"
-                                        className="text-center text-gray-500 py-4"
-                                    >
-                                        No ledger data available
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div> */}
                 {/* Ledger Table */}
                 <div className="bg-white shadow-sm rounded-md overflow-auto">
                     <table className="w-full text-xs sm:text-sm text-gray-700 border-collapse border border-gray-200">
@@ -153,7 +92,7 @@ export default function Ledger() {
                                     Mode
                                 </th>
                                 <th className="py-2 px-3 text-left">
-                                    Interest
+                                    Interest <span className=" ">*</span>
                                 </th>
                             </tr>
                         </thead>
@@ -236,7 +175,7 @@ export default function Ledger() {
 
                 {/* Closing Balance */}
                 <div className="bg-gray-50 border border-gray-200 rounded-md shadow-sm p-3 text-sm">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3 mb-4">
                         <div>
                             <h2 className="text-gray-600 font-semibold text-xs">
                                 Total Deposit
@@ -273,6 +212,13 @@ export default function Ledger() {
                                 ₹ {Number(closingBalance ?? 0).toLocaleString()}
                             </p>
                         </div>
+                    </div>
+                    <div className="">
+                        <span className="text-red-900 text-xs">
+                            * All the interest amount shown above are for
+                            reference only. The interest amount is valid only
+                            after end of financial year.
+                        </span>
                     </div>
                 </div>
             </div>
