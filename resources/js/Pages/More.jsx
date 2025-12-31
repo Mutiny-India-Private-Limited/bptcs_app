@@ -8,6 +8,13 @@ export default function More() {
 
     const handleLogout = (e) => {
         e.preventDefault();
+
+        const confirmed = window.confirm("Are you sure you want to log out?");
+        if (!confirmed) return;
+        if (window?.AppInterface) {
+            const response = window.AppInterface.deleteLoggedInUser?.();
+            console.log(response);
+        }
         router.post(route("logout"));
     };
 
@@ -67,13 +74,80 @@ export default function More() {
                         <i className="fa-solid fa-chevron-right text-gray-400 text-sm"></i>
                     </Link>
                 ))}
+                {/* <button
+                    type="button"
+                    id="btn-setup-biometric"
+                    onClick={() => window.enableTouchID()}
+                    className="w-full flex items-center justify-between bg-white shadow-sm rounded-lg p-4 hover:bg-indigo-50 transition text-left focus:outline-none focus:ring-0"
+                >
+                    <div className="flex items-center gap-3">
+                        <i className="fa-solid fa-fingerprint text-indigo-600 text-lg"></i>
+                        <span className="font-medium text-gray-700">
+                            Enable Touch ID
+                        </span>
+                    </div>
+                </button> */}
+                <div
+                    id="touch-id-item"
+                    className="flex items-center justify-between bg-white shadow-sm rounded-lg p-4 hover:bg-indigo-50 transition cursor-pointer"
+                >
+                    <div className="flex items-center gap-3">
+                        <i className="fa-solid fa-fingerprint text-indigo-600 text-lg"></i>
+                        <span className="font-medium text-gray-700">
+                            Enable Touch ID
+                        </span>
+                    </div>
+
+                    {/* Radio-style knob */}
+                    <div
+                        id="touch-id-switch-wrapper"
+                        style={{
+                            width: "38px",
+                            height: "22px",
+                            position: "relative",
+                        }}
+                    >
+                        {/* Track */}
+                        <div
+                            id="touch-id-switch"
+                            role="switch"
+                            aria-checked="false"
+                            // onClick={window.enableTouchID} // keep existing handler
+                            style={{
+                                width: "100%",
+                                height: "100%",
+                                borderRadius: "11px",
+                                backgroundColor: "#d1d5db", // default off
+                                position: "relative",
+                                cursor: "pointer",
+                                transition: "background-color 0.2s ease",
+                            }}
+                        ></div>
+
+                        {/* Knob */}
+                        <div
+                            id="touch-id-knob"
+                            style={{
+                                width: "18px",
+                                height: "18px",
+                                borderRadius: "50%",
+                                background: "#fff",
+                                position: "absolute",
+                                top: "2px",
+                                left: "2px", // default off position
+                                transition: "left 0.2s ease",
+                                boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+                            }}
+                        ></div>
+                    </div>
+                </div>
             </div>
 
             {/* Logout Button */}
             <div className="p-4 mt-auto">
                 <button
                     onClick={handleLogout}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg shadow-md transition"
+                    className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg shadow-md transition logout"
                 >
                     <i className="fa-solid fa-right-from-bracket mr-2"></i>
                     Logout

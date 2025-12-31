@@ -3,6 +3,7 @@
 use App\Models\Member;
 use App\Models\UserDeviceDetails;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 if (!function_exists('authMember')) {
     /**
@@ -13,7 +14,6 @@ if (!function_exists('authMember')) {
     function authMember(array $select = ['*'])
     {
         $sessionMember = session('member');
-
         if (!$sessionMember || !isset($sessionMember['member_id'], $sessionMember['mobile'])) {
             return null;
         }

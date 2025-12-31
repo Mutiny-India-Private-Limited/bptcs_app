@@ -10,4 +10,5 @@ class Member extends Model
     protected $table = 'member_details'; // Table name in members DB
 
     public $timestamps = false; // if your table doesn’t have timestamps
+    protected $fillable  = ['biometric_token'];
 }

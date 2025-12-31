@@ -17,12 +17,23 @@
         </div>
 
         <div class="card-body">
-            <div class="d-flex align-items-center mb-3">
-                <h5 class="mb-0">Total Devices</h5>
-                <span class="badge bg-primary ms-2 px-3 " style="font-size: 1rem;">
-                    {{ count($userDevice) }}
-                </span>
+            <div class="d-flex align-items-center gap-4 mb-3">
+                <div class="d-flex align-items-center">
+                    <h5 class="mb-0 me-2">Total Devices</h5>
+                    <span class="badge bg-primary px-3 fs-6">
+                        {{ count($userDevice) }}
+                    </span>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <h5 class="mb-0 me-2">Total Guest Devices</h5>
+                    <span class="badge bg-secondary px-3 fs-6">
+                        {{ count($guestDevice) }}
+                    </span>
+                </div>
             </div>
+
+
 
             <form class="row g-3" method="POST" action="{{ route('admin.notifications.store') }}"
                 enctype="multipart/form-data">
@@ -32,6 +43,7 @@
                 <div class="col-md-6">
                     <label for="fcm_token" class="form-label">Member <span class="text-danger">*</span></label>
                     <select id="fcm_token" class="form-select" name="fcm_token">
+                        <option value="all_guest">All Guest Devices</option>
                         <option value="all">All</option>
                         @foreach ($userDevice as $item)
                             @php

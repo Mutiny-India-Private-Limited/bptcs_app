@@ -80,6 +80,37 @@ class LoginController extends Controller
             ->with('logged_in_from_login', true)
             ->with('success', 'Welcome back! ' . $member->name);
     }
+    public function app_login(Request $request)
+    {
+        $request->validate([
+            'member_id' => 'required|numeric',
+        ]);
+
+        $member = Member::where('member_number', $request->member_id)->first();
+
+        if (!$member) {
+            return response()->json([
+                'message' => 'Invalid Member ID'
+            ], 401);
+        }
+
+        session([
+            'member_logged_in' => true,
+            'member' => [
+                'id' => $member->sno,
+                'member_id' => $member->member_number,
+                'name' => $member->name,
+                'mobile' => $member->phone_number,
+                'office' => $member->office_address,
+            ],
+        ]);
+
+        return response()->json([
+            'message' => 'Login successful',
+            'name' => $member->name,
+        ]);
+    }
+
 
     public function logout(Request $request)
     {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\SendNotificationsJob;
+use App\Models\GuestDevice;
 use App\Models\Notification;
 use App\Models\UserDeviceDetails;
 use App\Services\FirebaseNotificationService;
@@ -65,6 +66,7 @@ class FirebaseController extends Controller
             $imageUrl = asset('assets/image/notifications/' . $imageName);
         }
 
+        $notification_save = true;
         // Get FCM tokens (either a specific token or all users)
         if ($request->fcm_token == 'all') {
             $user_id = '0';
@@ -73,21 +75,31 @@ class FirebaseController extends Controller
                 // ->unique('member_number')
                 ->pluck('fcm_token')
                 ->toArray();
+        } else if ($request->fcm_token == 'all_guest') {
+            $notification_save = false;
+            $userTokens = GuestDevice::orderBy('id', 'desc')
+                ->get()
+                ->pluck('fcm_token')
+                ->toArray();
         } else {
             $user_id = UserDeviceDetails::where('fcm_token', $request->fcm_token)->value('member_number');
             $userTokens = UserDeviceDetails::where('member_number', $user_id)
                 ->get()
                 ->pluck('fcm_token')
                 ->toArray();
-            // $userTokens = [$request->fcm_token];
+        }
+        if (count($userTokens) == 0) {
+            return back()->with('error', 'No data found.');
         }
 
-        $notification = Notification::create([
-            'user_id' => $user_id,
-            'title' => $request->title,
-            'actionUrl' =>   $request->actionUrl,
-            'description' => ($request->body),
-        ]);
+        if ($notification_save) {
+            $notification = Notification::create([
+                'user_id' => $user_id,
+                'title' => $request->title,
+                'actionUrl' =>   $request->actionUrl,
+                'description' => ($request->body),
+            ]);
+        }
 
         $hasError = false;
 
@@ -103,7 +115,6 @@ class FirebaseController extends Controller
             $hasError = true;
         }
 
-
         // SendNotificationsJob::dispatch(
         //     $userTokens,
         //     $request->title,
@@ -113,7 +124,9 @@ class FirebaseController extends Controller
         // );
         // Update notification status based on result
         if ($hasError) {
-            $notification->update(['status' => '0']);
+            if ($notification_save) {
+                $notification->update(['status' => '0']);
+            }
             return back()->with('error', 'Some notifications failed to send.');
         }
 
@@ -123,9 +136,9 @@ class FirebaseController extends Controller
 
     public function fire_notifi_add()
     {
-
         $userDevice = UserDeviceDetails::orderBy("id", "desc")->get()->unique("member_number");
-        return view('admin.notification.firebase_add', compact('userDevice'));
+        $guestDevice = GuestDevice::orderBy("id", "desc")->get()->unique("device_id");
+        return view('admin.notification.firebase_add', compact('userDevice', 'guestDevice'));
 
         // return Inertia::render('SendNotification', ['userDevice' => $userDevice]);
     }

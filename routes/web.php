@@ -36,6 +36,7 @@ use Inertia\Inertia;
 Route::middleware('guest.member')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
+    Route::post('/app_login', [LoginController::class, 'app_login'])->name('app_login');
 });
 
 
@@ -69,9 +70,16 @@ Route::middleware('auth.member')->group(function () {
 });
 Route::get('/privacy_policy', fn() => Inertia::render('PrivacyPolicy'))->name('privacy_policy');
 
-// Route::get('/migrate', function () {
-//     return Artisan::call('migrate');
-// });
+Route::get('/migrate', function () {
+    Artisan::call('migrate');
+    return Artisan::output();
+});
+Route::post(
+    '/generate-biometric-token',
+    [GeneralController::class, 'generateToken']
+)->name('generateBioToken');
+Route::post('/biometric-login', [GeneralController::class, 'loginWithToken'])->name('loginWithBioToken');
+
 // Route::get('/seed', function () {
 //     return Artisan::call('db:seed');
 // });
