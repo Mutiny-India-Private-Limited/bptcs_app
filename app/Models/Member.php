@@ -11,4 +11,9 @@ class Member extends Model
 
     public $timestamps = false; // if your table doesn’t have timestamps
     protected $fillable  = ['biometric_token'];
+
+    public function accounts()
+    {
+        return $this->hasMany(AccountDetail::class, 'member_sno');
+    }
 }

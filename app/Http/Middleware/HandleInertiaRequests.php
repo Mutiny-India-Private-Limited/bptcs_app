@@ -39,6 +39,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn() => $request->session()->get('error'),
             ],
             'base_url' => url('/'),
+            'report_url' => env('REPORT_URL'),
         ];
     }
 }

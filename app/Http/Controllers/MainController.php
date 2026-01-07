@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AccountDetail;
+use App\Models\Deposit;
 use App\Models\Member;
 use App\Models\Notification;
+use App\Models\Transaction;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use InvalidArgumentException;
+use Throwable;
 
 class MainController extends Controller
 {
@@ -94,7 +99,15 @@ class MainController extends Controller
             'permanent_city',
             'permanent_state',
             'nominee_name',
-            'nominee_relation'
+            'nominee_relation',
+            'designation',
+            'date_of_appointment',
+            'date_of_retirement',
+            'office_address',
+            'office_city',
+            'office_state',
+            'zone',
+            'district'
         ]);
         if (!$member) {
             return redirect()
@@ -251,5 +264,176 @@ class MainController extends Controller
     public function help_support(Request $request)
     {
         return Inertia::render('HelpSupport');
+    }
+
+    public function security(Request $request)
+    {
+        return Inertia::render('Security');
+    }
+
+    public function accounts_index(Request $request)
+    {
+        try {
+            $memberNumber = authMember()->member_number;
+
+            $fdAccountIds = AccountDetail::where('member_sno', $memberNumber)
+                ->where('account_type', 'fd')
+                ->pluck('id');
+
+            $rdAccountIds = AccountDetail::where('member_sno', $memberNumber)
+                ->where('account_type', 'rd')
+                ->pluck('id');
+
+            $savingAccountIds = AccountDetail::where('member_sno', $memberNumber)
+                ->where('account_type', 'saving')
+                ->pluck('id');
+
+            $fd = Deposit::with('account')->whereIn('account_id', $fdAccountIds)
+                ->where('type', 'fd')
+                ->orderBy('start_date', 'desc')
+                ->get()
+                ->map(function ($deposit) {
+                    return array_merge(
+                        $deposit->toArray(),
+                        [
+                            'transaction' => $deposit->fd_amount
+                                ? $deposit->fd_amount->toArray()
+                                : null
+                        ]
+                    );
+                })
+                ->toArray();
+            $rd = Deposit::with(['account', 'getAmount'])
+                ->whereIn('account_id', $rdAccountIds)
+                ->where('type', 'rd')
+                ->get()
+                ->groupBy('account_id')
+                ->map(function ($deposits) {
+                    $firstDeposit = $deposits->first();
+                    return [
+                        'id' => $firstDeposit->account_id,
+                        'account' => [
+                            'account_number' => $firstDeposit->account->account_number ?? 'Deposit Account',
+                        ],
+                        'transaction' => [
+                            'reference' => optional($firstDeposit->fd_amount)->reference ?? '-',
+                        ],
+                        'start_date' => $firstDeposit->start_date,
+                        'status' => $firstDeposit->status,
+                        'amount' => $deposits->sum(fn($deposit) => optional($deposit->fd_amount)->amount ?? 0),
+                    ];
+                })
+                ->values()
+                ->toArray();
+
+
+            $savings = Deposit::with(['account', 'getAmount', 'transactions'])
+                ->whereIn('account_id', $savingAccountIds)
+                ->where('type', 'saving')
+                ->get()
+                ->groupBy('account_id')
+                ->map(function ($deposits) {
+                    $firstDeposit = $deposits->first();
+                    $lastBalance = $firstDeposit->account->transactions
+                        ->sortByDesc('created_at')
+                        ->first()
+                        ?->balance_after ?? 0;
+                    return [
+                        'id' => $firstDeposit->account->id,
+                        'account' => [
+                            'account_number' => $firstDeposit->account->account_number ?? 'Deposit Account',
+                        ],
+                        'transaction' => [
+                            'reference' => $firstDeposit->fd_amount->reference,
+                        ],
+                        'start_date' => $firstDeposit->start_date,
+                        'amount' => $lastBalance,
+                        'status' => $firstDeposit->status,
+
+                    ];
+                })
+                ->values()
+                ->toArray();
+            $dashboardStats = getDashboardSummary($memberNumber);
+            $totals = [
+                'deposit' => $dashboardStats['totalDeposit'],
+                'withdrawal' => $dashboardStats['totalWithdrawal'],
+                'interest' => $dashboardStats['totalInterest'],
+                'closing' => $dashboardStats['closing'],
+            ];
+            return Inertia::render('Accounts/Index', [
+                'fd' => $fd,
+                'rd' => $rd,
+                'savings' => $savings,
+                'totals' => $totals
+            ]);
+        } catch (Throwable $e) {
+            // Log the exception if needed
+            // logger($e->getMessage());
+            return redirect()->route('home')->with(['error' => 'Something went wrong.']);
+        }
+    }
+
+    public function fd_show(Request $request)
+    {
+        try {
+            $id = $request->id ?? null;
+            if (!$id) {
+                return redirect()->route('accounts.index');
+            }
+            $deposit = Deposit::with('getAmount', 'account', 'account.memberDetail')->findorFail($id);
+            if (!$deposit) {
+                return redirect()->route('accounts.index')->with(['error' => 'Something went wrong.']);
+            }
+
+            return Inertia::render('Accounts/FdShow', [
+                'deposit' => $deposit,
+            ]);
+        } catch (Throwable $e) {
+            return redirect()->route('accounts.index')->with(['error' => 'Something went wrong.']);
+        }
+    }
+    public function rd_show(Request $request)
+    {
+        try {
+            $id = $request->id ?? null;
+            if (!$id) {
+                return redirect()->route('accounts.index')->with(['error' => 'Something went wrong.']);
+            }
+
+            $deposit = Deposit::with('getAmount', 'account', 'transactions')->where('account_id', $id)->first()->toArray();
+
+            if (!$deposit) {
+                return redirect()->route('accounts.index');
+            }
+
+            return Inertia::render('Accounts/RdShow', [
+                'rd' => $deposit,
+            ]);
+        } catch (Throwable $e) {
+            return redirect()->route('accounts.index')->with(['error' => 'Something went wrong.']);
+        }
+    }
+    public function saving_show(Request $request)
+    {
+        try {
+            $id = $request->id ?? null;
+            if (!$id) {
+                return redirect()->route('accounts.index')->with(['error' => 'Something went wrong.']);
+            }
+
+            $deposit = AccountDetail::with(['transactions'])
+                ->findOrFail($id);
+            $transactions = $deposit->transactions()
+                ->orderBy('created_at', 'desc')
+                ->paginate(50);
+
+            return Inertia::render('Accounts/SavingShow', [
+                'saving' => $deposit,
+                'transactions' => $transactions,
+            ]);
+        } catch (Throwable $e) {
+            return redirect()->route('accounts.index')->with(['error' => 'Something went wrong.']);
+        }
     }
 }

@@ -295,13 +295,13 @@ export default function Home() {
                         value={totals.withdrawal.toLocaleString()}
                         color="red"
                     />
-                    <MetricCard
+                    {/* <MetricCard
                         title="Total Interest"
                         value={totals.interest.toLocaleString()}
                         color="blue"
-                    />
+                    /> */}
                     <MetricCard
-                        title="Total Savings"
+                        title="Total Savings *"
                         value={totals.closing.toLocaleString()}
                         color="cyan"
                     />

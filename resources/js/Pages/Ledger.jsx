@@ -209,7 +209,8 @@ export default function Ledger() {
                                 Closing Balance
                             </h2>
                             <p className="text-indigo-700 font-bold mt-1">
-                                ₹ {Number(closingBalance ?? 0).toLocaleString()}
+                                ₹ {Number(closingBalance ?? 0).toLocaleString()}{" "}
+                                *
                             </p>
                         </div>
                     </div>

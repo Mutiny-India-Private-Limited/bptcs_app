@@ -80,7 +80,7 @@ export default function Login() {
 
         // Run both
         fetchTokenAndSave();
-        // autoLoginMember();
+        autoLoginMember();
     }, []);
 
     const { errors: propsErrors, base_url } = usePage().props;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, usePage, router, Head } from "@inertiajs/react";
 import Toast, { showToast } from "@/Components/Toast";
-
+import GlobalImagePreview from "@/Components/GlobalImagePreview";
 export default function AppLayout({ children, ...meta }) {
     const title = meta.title || "BPTCS";
     const [loading, setLoading] = useState(false);
@@ -72,62 +72,71 @@ export default function AppLayout({ children, ...meta }) {
             const canScan = window.AndroidBiometric.canAuthenticate();
             const hasToken = window.AndroidBiometric.hasBiometricToken();
 
-            if (canScan) {
-                // 1. Show the main container if biometrics are supported
-                const wrapper = document.getElementById("biometric-wrapper");
-                if (wrapper) wrapper.style.display = "block";
-
-                // 2. Handle the Login Button (for the Login Page)
-                const loginBtn = document.getElementById("btn-login-biometric");
-                if (loginBtn) {
-                    loginBtn.style.display = hasToken ? "block" : "none";
-                }
-
-                // 3. Handle the Toggle Switch (for the Settings Page)
-                const switchEl = document.getElementById("touch-id-switch");
-                const knobEl = document.getElementById("touch-id-knob");
-
-                if (switchEl && knobEl) {
-                    // Set initial state based on current Android storage
-                    updateToggleUI(hasToken, switchEl, knobEl);
-
-                    // Add the click listener to handle Enable/Disable
-                    switchEl.onclick = function () {
-                        const currentlyEnabled =
-                            window.AndroidBiometric.hasBiometricToken();
-
-                        if (currentlyEnabled) {
-                            // DISABLE: Remove from Android storage
-                            window.AndroidBiometric.deleteBiometricToken?.();
-                            updateToggleUI(false, switchEl, knobEl);
-                        } else {
-                            // ENABLE: Trigger the scan and save
-                            window
-                                .enableTouchID()
-                                .then(() => {
-                                    console.log("TouchID scan complete ");
-                                    const nowEnabled =
-                                        window.AndroidBiometric.hasBiometricToken();
-                                    updateToggleUI(
-                                        nowEnabled,
-                                        switchEl,
-                                        knobEl
-                                    );
-                                })
-                                .catch(() => {
-                                    console.log("TouchID scan failed ");
-                                });
-
-                            // Re-check after a brief delay to see if user succeeded in scan
-                            setTimeout(() => {
-                                const nowEnabled =
-                                    window.AndroidBiometric.hasBiometricToken();
-                                updateToggleUI(nowEnabled, switchEl, knobEl);
-                            }, 500);
-                        }
-                    };
-                }
+            if (!hasToken && !route().current("security")) {
+                router.visit(route("security"));
             }
+
+            const loginBtn = document.getElementById("btn-login-biometric");
+            if (loginBtn) {
+                loginBtn.style.display = hasToken ? "block" : "none";
+            }
+
+            // if (canScan) {
+            //     // 1. Show the main container if biometrics are supported
+            //     const wrapper = document.getElementById("biometric-wrapper");
+            //     if (wrapper) wrapper.style.display = "block";
+
+            //     // 2. Handle the Login Button (for the Login Page)
+            //     const loginBtn = document.getElementById("btn-login-biometric");
+            //     if (loginBtn) {
+            //         loginBtn.style.display = hasToken ? "block" : "none";
+            //     }
+
+            //     // 3. Handle the Toggle Switch (for the Settings Page)
+            //     const switchEl = document.getElementById("touch-id-switch");
+            //     const knobEl = document.getElementById("touch-id-knob");
+
+            //     if (switchEl && knobEl) {
+            //         // Set initial state based on current Android storage
+            //         updateToggleUI(hasToken, switchEl, knobEl);
+
+            //         // Add the click listener to handle Enable/Disable
+            //         switchEl.onclick = function () {
+            //             const currentlyEnabled =
+            //                 window.AndroidBiometric.hasBiometricToken();
+
+            //             if (currentlyEnabled) {
+            //                 // DISABLE: Remove from Android storage
+            //                 window.AndroidBiometric.deleteBiometricToken?.();
+            //                 updateToggleUI(false, switchEl, knobEl);
+            //             } else {
+            //                 // ENABLE: Trigger the scan and save
+            //                 window
+            //                     .enableTouchID()
+            //                     .then(() => {
+            //                         console.log("TouchID scan complete ");
+            //                         const nowEnabled =
+            //                             window.AndroidBiometric.hasBiometricToken();
+            //                         updateToggleUI(
+            //                             nowEnabled,
+            //                             switchEl,
+            //                             knobEl
+            //                         );
+            //                     })
+            //                     .catch(() => {
+            //                         console.log("TouchID scan failed ");
+            //                     });
+
+            //                 // Re-check after a brief delay to see if user succeeded in scan
+            //                 setTimeout(() => {
+            //                     const nowEnabled =
+            //                         window.AndroidBiometric.hasBiometricToken();
+            //                     updateToggleUI(nowEnabled, switchEl, knobEl);
+            //                 }, 500);
+            //             }
+            //         };
+            //     }
+            // }
         }
 
         // Helper function to keep UI code clean
@@ -247,16 +256,17 @@ export default function AppLayout({ children, ...meta }) {
                         label="Profile"
                         active={isActive("profile")}
                     />
+
                     <NavLink
-                        name="office"
-                        icon="fa-building"
-                        label="Office"
-                        active={isActive("office")}
+                        name="accounts.index"
+                        icon="fa-bank"
+                        label="Accounts"
+                        active={isActive("accounts.index")}
                     />
                     <NavLink
                         name="ledger.years"
                         icon="fa-book"
-                        label="Ledger"
+                        label="CGR"
                         active={isActive("ledger.years")}
                     />
                     <NavLink
@@ -270,6 +280,7 @@ export default function AppLayout({ children, ...meta }) {
                 {/* Toast */}
                 <Toast />
             </div>
+            <GlobalImagePreview />
         </>
     );
 }

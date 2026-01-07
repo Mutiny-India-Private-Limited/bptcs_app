@@ -7,7 +7,7 @@ export default function LedgerYearSelect({ years }) {
     return (
         <AppLayout title="Select Ledger Year">
             <PageHeader
-                title="Ledger Years"
+                title="CGR Ledger Years"
                 subtitle="Select a financial year to view ledger"
             />
 

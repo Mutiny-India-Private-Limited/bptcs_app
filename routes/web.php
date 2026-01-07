@@ -60,6 +60,9 @@ Route::middleware('auth.member')->group(function () {
     Route::get('/notifications', [MainController::class, 'notifications'])->name('notification');
     Route::get('/help_support', [MainController::class, 'help_support'])->name('help_support');
 
+    Route::get('/security', [MainController::class, 'security'])->name('security');
+
+
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     Route::get('/refresh', [LoginController::class, 'refresh'])->name('refresh');
@@ -67,6 +70,12 @@ Route::middleware('auth.member')->group(function () {
     Route::get('/blogs', [BlogController::class, 'blogs'])->name('blogs');
 
     Route::get('/blog-details/{id}', [BlogController::class, 'blog_details'])->name('blog_details');
+
+    Route::get('/accounts', [MainController::class, 'accounts_index'])->name('accounts.index');
+
+    Route::get('/fd_details/{id}', [MainController::class, 'fd_show'])->name('fd.show');
+    Route::get('/rd_details/{id}', [MainController::class, 'rd_show'])->name('rd.show');
+    Route::get('/saving_details/{id}', [MainController::class, 'saving_show'])->name('savings.show');
 });
 Route::get('/privacy_policy', fn() => Inertia::render('PrivacyPolicy'))->name('privacy_policy');
 

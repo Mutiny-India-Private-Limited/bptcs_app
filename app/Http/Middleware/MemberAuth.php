@@ -15,7 +15,8 @@ class MemberAuth
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!session('member_logged_in')) {
+        $auth =  authMember();
+        if (!$auth) {
             return redirect()
                 ->route('login')
                 ->withErrors(['login' => 'Please login to continue.']);

@@ -99,7 +99,7 @@ export default function More() {
                     </div>
 
                     {/* Radio-style knob */}
-                    <div
+                    {/* <div
                         id="touch-id-switch-wrapper"
                         style={{
                             width: "38px",
@@ -107,12 +107,10 @@ export default function More() {
                             position: "relative",
                         }}
                     >
-                        {/* Track */}
                         <div
                             id="touch-id-switch"
                             role="switch"
                             aria-checked="false"
-                            // onClick={window.enableTouchID} // keep existing handler
                             style={{
                                 width: "100%",
                                 height: "100%",
@@ -124,7 +122,6 @@ export default function More() {
                             }}
                         ></div>
 
-                        {/* Knob */}
                         <div
                             id="touch-id-knob"
                             style={{
@@ -135,6 +132,44 @@ export default function More() {
                                 position: "absolute",
                                 top: "2px",
                                 left: "2px", // default off position
+                                transition: "left 0.2s ease",
+                                boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+                            }}
+                        ></div>
+                    </div> */}
+                    <div
+                        style={{
+                            width: "38px",
+                            height: "22px",
+                            position: "relative",
+                            opacity: 0.6, // subtle visual cue for disabled
+                        }}
+                    >
+                        {/* Track */}
+                        <div
+                            role="switch"
+                            aria-checked="true"
+                            style={{
+                                width: "100%",
+                                height: "100%",
+                                borderRadius: "11px",
+                                backgroundColor: "#34C759", // keep green
+                                position: "relative",
+                                cursor: "not-allowed", // show disabled
+                                transition: "background-color 0.2s ease",
+                            }}
+                        ></div>
+
+                        {/* Knob */}
+                        <div
+                            style={{
+                                width: "18px",
+                                height: "18px",
+                                borderRadius: "50%",
+                                background: "#fff",
+                                position: "absolute",
+                                top: "2px",
+                                left: "18px", // keep right side for "on"
                                 transition: "left 0.2s ease",
                                 boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
                             }}
