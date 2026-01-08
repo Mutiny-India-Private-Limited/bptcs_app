@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import GuestLayout from "@/Layouts/GuestLayout";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
 
@@ -12,12 +12,44 @@ export default function Login() {
     } = useForm({
         member_id: "",
         mobile: "",
+        otp: "",
     });
-
+    const [otpSent, setOtpSent] = useState(false);
+    const [resendKey, setResendKey] = useState(0);
+    const [resendTimer, setResendTimer] = useState(60);
+    const otpInputRef = useRef(null);
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route("login"));
+
+        if (!otpSent) {
+            post(route("login.sendOtp"), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setOtpSent(true);
+                    setResendKey((k) => k + 1); // start timer
+                },
+            });
+        } else {
+            post(route("login.verifyOtp"), {
+                preserveScroll: true,
+                onError: () => {
+                    setData("otp", "");
+                },
+            });
+        }
     };
+
+    const resendOtp = () => {
+        post(route("login.sendOtp"), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setResendKey((k) => k + 1); //  restart timer
+            },
+        });
+    };
+
+    const { errors: propsErrors, base_url, flash } = usePage().props;
+    const errors = Object.keys(formErrors).length ? formErrors : propsErrors;
     useEffect(() => {
         if (!window?.AppInterface) return;
 
@@ -81,10 +113,32 @@ export default function Login() {
         // Run both
         fetchTokenAndSave();
         autoLoginMember();
-    }, []);
+        if (flash?.otp_sent) {
+            setOtpSent(true);
+        }
+    }, [flash]);
+    useEffect(() => {
+        if (!otpSent) return;
 
-    const { errors: propsErrors, base_url } = usePage().props;
-    const errors = Object.keys(formErrors).length ? formErrors : propsErrors;
+        setResendTimer(60);
+
+        const interval = setInterval(() => {
+            setResendTimer((prev) => {
+                if (prev <= 1) {
+                    clearInterval(interval);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [otpSent, resendKey]);
+    useEffect(() => {
+        if (otpSent && otpInputRef.current) {
+            otpInputRef.current.focus();
+        }
+    }, [otpSent]);
 
     return (
         <GuestLayout title="Login">
@@ -110,28 +164,29 @@ export default function Login() {
 
                 <form
                     onSubmit={handleSubmit}
-                    className="space-y-5"
+                    className="space-y-4"
                     autoComplete="off"
                 >
                     {/* Member ID */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-600">
-                            Member ID
+                        <label className="block text-sm font-bold text-gray-600">
+                            Member ID{" "}
+                            <span className="text-red-500 text-xs">*</span>
                         </label>
                         <input
                             type="tel"
                             name="member_id"
                             value={data.member_id}
+                            disabled={otpSent}
                             onChange={(e) =>
                                 setData("member_id", e.target.value)
                             }
-                            autoComplete="off"
-                            autoCorrect="off"
-                            autoCapitalize="none"
-                            spellCheck={false}
-                            className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                            className={`mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm ${
+                                otpSent ? "bg-gray-100 cursor-not-allowed" : ""
+                            }`}
                             placeholder="Enter your Member ID"
                         />
+
                         {errors.member_id && (
                             <p className="text-red-500 text-xs mt-1">
                                 {errors.member_id}
@@ -141,21 +196,35 @@ export default function Login() {
 
                     {/* Mobile Number */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-600">
-                            Mobile Number
+                        <label className="block text-sm font-bold text-gray-600">
+                            Mobile Number{" "}
+                            <span className="text-red-500 text-xs">*</span>
                         </label>
                         <input
                             type="tel"
                             name="mobile"
                             value={data.mobile}
+                            disabled={otpSent}
+                            maxLength={10}
                             onChange={(e) => setData("mobile", e.target.value)}
-                            autoComplete="off"
-                            autoCorrect="off"
-                            autoCapitalize="none"
-                            spellCheck={false}
-                            className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                            className={`mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm ${
+                                otpSent ? "bg-gray-100 cursor-not-allowed" : ""
+                            }`}
                             placeholder="Enter your mobile number"
                         />
+                        {otpSent && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setOtpSent(false);
+                                    setData("otp", "");
+                                    setResendTimer(0);
+                                }}
+                                className="text-xs text-indigo-600 hover:underline text-center "
+                            >
+                                Change Mobile Number
+                            </button>
+                        )}
                         {errors.mobile && (
                             <p className="text-red-500 text-xs mt-1">
                                 {errors.mobile}
@@ -170,20 +239,85 @@ export default function Login() {
                         </p>
                     )}
 
+                    {otpSent && (
+                        <div>
+                            <label className="block text-sm font-bold text-gray-600">
+                                Enter OTP{" "}
+                                <span className="text-red-500 text-xs">*</span>
+                            </label>
+                            <input
+                                type="tel"
+                                name="otp"
+                                maxLength={6}
+                                ref={otpInputRef}
+                                value={data.otp}
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(
+                                        /\D/g,
+                                        ""
+                                    );
+                                    setData("otp", value);
+                                }}
+                                className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                placeholder="Enter OTP"
+                            />
+
+                            {otpSent && (
+                                <div className="text-xs text-center mt-2">
+                                    {resendTimer > 0 ? (
+                                        <span className="text-gray-500">
+                                            Resend OTP in {resendTimer}s
+                                        </span>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={resendOtp}
+                                            disabled={processing}
+                                            className="text-indigo-600 hover:underline font-medium"
+                                        >
+                                            Resend OTP
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                            {errors.otp && (
+                                <p className="text-red-500 text-xs mt-1">
+                                    {errors.otp}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
                     {/* Submit button */}
                     <button
                         type="submit"
-                        disabled={processing}
-                        className={`w-full py-2.5 rounded-lg shadow-md font-semibold text-white transition-all duration-200 ${
-                            processing
-                                ? "bg-indigo-400 cursor-not-allowed"
-                                : "bg-indigo-600 hover:bg-indigo-700"
-                        }`}
+                        disabled={
+                            processing ||
+                            (!otpSent &&
+                                (data.member_id.trim() === "" ||
+                                    data.mobile.length !== 10)) || // login disabled if member_id empty or mobile not 10 digits
+                            (otpSent && data.otp.length !== 6) // verify disabled until OTP 6 digits
+                        }
+                        className={`w-full py-2.5 rounded-lg shadow-md font-semibold text-white transition-all duration-200
+        ${
+            processing ||
+            (!otpSent &&
+                (data.member_id.trim() === "" || data.mobile.length !== 10)) ||
+            (otpSent && data.otp.length !== 6)
+                ? "bg-indigo-400 cursor-not-allowed opacity-50"
+                : "bg-indigo-600 hover:bg-indigo-700"
+        }`}
                     >
-                        {processing ? "Verifying..." : "Login"}
+                        {processing
+                            ? "Processing..."
+                            : otpSent
+                            ? "Verify OTP"
+                            : "Proceed"}
                     </button>
+
                     <br />
-                    <button
+                    {/* <button
                         id="btn-login-biometric"
                         type="button"
                         onClick={() => window.startBiometricLogin()}
@@ -192,7 +326,7 @@ export default function Login() {
                     >
                         <i className="fas fa-fingerprint text-base"></i>
                         <span>Login with Fingerprint</span>
-                    </button>
+                    </button> */}
                 </form>
 
                 {/* Footer */}

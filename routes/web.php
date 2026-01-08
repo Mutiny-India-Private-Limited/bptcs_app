@@ -89,6 +89,9 @@ Route::post(
 )->name('generateBioToken');
 Route::post('/biometric-login', [GeneralController::class, 'loginWithToken'])->name('loginWithBioToken');
 
+Route::post('/login/send-otp', [LoginController::class, 'sendOtp'])->name('login.sendOtp');
+Route::post('/login/verify-otp', [LoginController::class, 'verifyOtp'])->name('login.verifyOtp');
+
 // Route::get('/seed', function () {
 //     return Artisan::call('db:seed');
 // });

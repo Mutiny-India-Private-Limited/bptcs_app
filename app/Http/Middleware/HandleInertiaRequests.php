@@ -37,6 +37,7 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn() => $request->session()->get('success'),
                 'error' => fn() => $request->session()->get('error'),
+                'otp_sent' => $request->session()->get('otp_sent'),
             ],
             'base_url' => url('/'),
             'report_url' => env('REPORT_URL'),
