@@ -2,11 +2,7 @@
 
 namespace App\Services;
 
-// use App\Models\SmsLog;
-
 use App\Models\SmsLog;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class SmsService
@@ -63,8 +59,16 @@ class SmsService
 
         $output = curl_exec($ch);
 
+
         if (curl_errno($ch)) {
             Log::error('MSG91 cURL Error: ' . curl_error($ch));
+            SmsLog::create([
+                'phone_number' => $mobile,
+                'type'         => $type,
+                'message'      => $message,
+                'status'       => false,
+                'sent_at'      => now(),
+            ]);
             return ['type' => 'error', 'message' => curl_error($ch)];
         }
 

@@ -28,5 +28,10 @@
                 <i class="fas fa-bell"></i> Send Notification
             </a>
         </li>
+        <li>
+            <a href="{{ route('admin.sms.list') }}" class="nav-link text-dark">
+                <i class="fas fa-message"></i> Sms Logs
+            </a>
+        </li>
     </ul>
 </nav>

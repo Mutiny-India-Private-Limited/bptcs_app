@@ -23,6 +23,10 @@ Route::prefix('admin')->name('admin.')->middleware('admin.auth')->group(function
         Route::get('/list', [FirebaseController::class, 'fire_notifi_list'])->name('list');
     });
 
+    Route::prefix('sms')->name('sms.')->group(function () {
+        Route::get('/list', [FirebaseController::class, 'sms_logs_list'])
+            ->name('list');
+    });
 
     Route::prefix('blogs')->name('blogs.')->group(function () {
         Route::get('/manage', [BlogController::class, 'blogManage'])->name('manage');

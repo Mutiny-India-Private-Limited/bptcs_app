@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\SendNotificationsJob;
 use App\Models\GuestDevice;
 use App\Models\Notification;
+use App\Models\SmsLog;
 use App\Models\UserDeviceDetails;
 use App\Services\FirebaseNotificationService;
 use Illuminate\Http\Request;
@@ -151,5 +152,17 @@ class FirebaseController extends Controller
         $notifications = Notification::orderBy('id', 'desc')->get();
 
         return view('admin.notification.manage', compact('notifications'));
+    }
+    public function sms_logs_list(Request $request)
+    {
+        $query = SmsLog::orderBy('sent_at', 'desc')->with('memberDetail');
+
+        if ($request->filled('phone_number')) {
+            $query->where('phone_number', 'like', '%' . $request->phone_number . '%');
+        }
+
+        $smsLogs = $query->paginate(50)->withQueryString();
+
+        return view('admin.sms.manage', compact('smsLogs'));
     }
 }
