@@ -246,7 +246,7 @@ export default function Home() {
                                 </div>
 
                                 {/* Smaller totals below chart */}
-                                <div className="mt-2 flex gap-4 text-gray-600 text-sm">
+                                {/* <div className="mt-2 flex gap-4 text-gray-600 text-sm">
                                     <div>
                                         <span>Total Deposit: </span>
                                         <span className="font-semibold">
@@ -259,7 +259,7 @@ export default function Home() {
                                             {totalInterest.toLocaleString()}
                                         </span>
                                     </div>
-                                </div>
+                                </div> */}
                             </div>
                         </div>
 
@@ -316,6 +316,14 @@ export default function Home() {
                         color="gray"
                         valueSize="text-xs"
                     />
+                </div>
+
+                <div className="mx-4">
+                    <span className="text-red-900 text-xs">
+                        * All the interest amount shown above are for reference
+                        only. The interest amount is valid only after end of
+                        financial year/maturity period.
+                    </span>
                 </div>
             </div>
         </AppLayout>
