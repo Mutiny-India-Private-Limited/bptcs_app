@@ -10,7 +10,7 @@ export default function Show() {
     const [imgSrc, setImgSrc] = useState(
         rd.account?.document
             ? `${report_url}/storage/${rd.account?.document}`
-            : ""
+            : "",
     );
     const toAllCaps = (value) => {
         if (typeof value !== "string") return value;
@@ -47,13 +47,13 @@ export default function Show() {
     const transactions = Array.isArray(rd.transactions)
         ? rd.transactions
         : rd.transactions
-        ? [rd.transactions]
-        : [];
+          ? [rd.transactions]
+          : [];
     const totalAmount =
         transactions.length > 0
             ? transactions.reduce(
                   (sum, tx) => sum + (parseFloat(tx.amount) || 0),
-                  0
+                  0,
               )
             : 0;
     return (
@@ -228,7 +228,7 @@ export default function Show() {
                                                 {index + 1}
                                             </td>
                                             <td className="py-2 px-3 border-r border-gray-200 text-xs">
-                                                {formatDate(tx.created_at) ??
+                                                {formatDate(tx?.deposit_date) ??
                                                     "—"}
                                             </td>
                                             <td className="py-2 px-3 border-r border-gray-200 text-xs">

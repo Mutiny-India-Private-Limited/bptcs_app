@@ -10,7 +10,7 @@ export default function Show() {
     const [imgSrc, setImgSrc] = useState(
         deposit.account?.document
             ? `${report_url}/storage/${deposit.account?.document}`
-            : ""
+            : "",
     );
     const toAllCaps = (value) => {
         if (typeof value !== "string") return value;
@@ -44,12 +44,12 @@ export default function Show() {
             </AppLayout>
         );
     }
-    const amount = deposit.get_amount?.amount ?? deposit.amount ?? "—";
-    const withdrawals = Array.isArray(deposit.withdrawals)
-        ? deposit.withdrawals
-        : deposit.withdrawals
-        ? [deposit.withdrawals]
-        : [];
+    const amount = deposit.account?.amount ?? deposit.get_amount?.amount ?? "—";
+    const transactions = Array.isArray(deposit.transactions)
+        ? deposit.transactions
+        : deposit.transactions
+          ? [deposit.transactions]
+          : [];
 
     return (
         <AppLayout title="Deposit Details">
@@ -78,7 +78,7 @@ export default function Show() {
                     <div className="text-right">
                         <p className="text-xs opacity-90">Status</p>
                         <p className="text-sm font-medium capitalize">
-                            {deposit.status ?? "—"}
+                            {deposit.account?.status ?? "—"}
                         </p>
                     </div>
                 </div>
@@ -114,10 +114,10 @@ export default function Show() {
                         label="Maturity Date"
                         value={formatDate(deposit.end_date) ?? "—"}
                     />
-                    <DetailRow
+                    {/* <DetailRow
                         label="Status"
                         value={toAllCaps(member?.status) ?? "—"}
-                    />
+                    /> */}
                     {imgSrc ? (
                         <div className="bg-white rounded-lg shadow p-2">
                             <h3 className="text-sm font-semibold text-gray-800 mb-2">
@@ -180,51 +180,133 @@ export default function Show() {
                 </div>
 
                 {/* Withdrawn History */}
-                {/* <div className="bg-white rounded-lg shadow">
+                <div className="bg-white rounded-lg shadow">
                     <div className="p-4 border-b">
                         <h3 className="text-sm font-semibold text-gray-800">
-                            Withdrawn History
+                            Transaction History
                         </h3>
                     </div>
 
-                    {withdrawals.length === 0 ? (
+                    {transactions.length === 0 ? (
                         <div className="p-4 text-sm text-gray-500 text-center">
-                            No withdrawals found.
+                            No transactions found.
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead className="bg-gray-50 border-b">
-                                    <tr className="text-left text-xs text-gray-600 uppercase">
-                                        <th className="px-4 py-2">Date</th>
-                                        <th className="px-4 py-2">Amount</th>
+                        <div className="bg-white shadow-sm rounded-md overflow-auto">
+                            <table className="w-full text-xs sm:text-sm text-gray-700 border-collapse border border-gray-200">
+                                <thead className="bg-indigo-600 text-white">
+                                    <tr>
+                                        <th className="py-2 px-3 text-left border-r border-indigo-400">
+                                            Date
+                                        </th>
+                                        <th className="py-2 px-3 text-left border-r border-indigo-400">
+                                            Reference
+                                        </th>
+                                        <th className="py-2 px-3 text-left border-r border-indigo-400">
+                                            Type
+                                        </th>
+                                        <th className="py-2 px-3 text-right border-r border-indigo-400">
+                                            Amount
+                                        </th>
+                                        <th className="py-2 px-3 text-right">
+                                            Balance
+                                        </th>
                                     </tr>
                                 </thead>
+
                                 <tbody>
-                                    {withdrawals.map((wd, index) => (
-                                        <tr
-                                            key={index}
-                                            className="border-b last:border-b-0"
-                                        >
-                                            <td className="px-4 py-2">
-                                                {wd.created_at
-                                                    ? new Date(
-                                                          wd.created_at
-                                                      ).toLocaleDateString(
-                                                          "en-GB"
-                                                      )
-                                                    : "—"}
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                Rs. {wd.amount ?? "—"}
+                                    {transactions.length > 0 ? (
+                                        transactions.map((tx, idx) => {
+                                            const rowBg =
+                                                idx % 2 === 0
+                                                    ? "bg-white"
+                                                    : "bg-gray-50";
+
+                                            const dateValue =
+                                                tx.type === "deposit"
+                                                    ? (deposit?.start_date ??
+                                                      "-")
+                                                    : (tx.created_at ?? "-");
+
+                                            return (
+                                                <tr
+                                                    key={tx.id}
+                                                    className={`${rowBg} border-b border-gray-200 text-xs sm:text-sm`}
+                                                >
+                                                    {/* Date */}
+                                                    <td className="py-2 px-2 sm:px-3 border-r border-gray-200 whitespace-nowrap">
+                                                        <p>
+                                                            {formatDate(
+                                                                dateValue,
+                                                            )}
+                                                        </p>
+                                                        <p className="text-[10px] text-gray-500">
+                                                            {dateValue !== "-"
+                                                                ? new Date(
+                                                                      dateValue,
+                                                                  ).toLocaleTimeString(
+                                                                      "en-GB",
+                                                                  )
+                                                                : "-"}
+                                                        </p>
+                                                    </td>
+
+                                                    {/* Reference */}
+                                                    <td className="py-2 px-2 sm:px-3 border-r border-gray-200 whitespace-nowrap">
+                                                        {tx.reference ?? "-"}
+                                                    </td>
+
+                                                    {/* Type */}
+                                                    <td className="py-2 px-2 sm:px-3 border-r border-gray-200 capitalize whitespace-nowrap">
+                                                        {tx.direction}
+                                                    </td>
+
+                                                    {/* Amount */}
+                                                    <td
+                                                        className={`py-2 px-2 sm:px-3 text-right border-r border-gray-200 font-semibold whitespace-nowrap ${
+                                                            tx.direction ===
+                                                            "credit"
+                                                                ? "text-green-600"
+                                                                : "text-red-600"
+                                                        }`}
+                                                    >
+                                                        <span>
+                                                            {tx.direction ===
+                                                            "credit"
+                                                                ? "+"
+                                                                : "-"}{" "}
+                                                            ₹
+                                                            {Number(
+                                                                tx.amount,
+                                                            ).toLocaleString()}
+                                                        </span>
+                                                    </td>
+
+                                                    {/* Balance */}
+                                                    <td className="py-2 px-2 sm:px-3 text-right font-medium whitespace-nowrap">
+                                                        ₹
+                                                        {Number(
+                                                            tx.balance_after,
+                                                        ).toLocaleString()}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td
+                                                colSpan="5"
+                                                className="text-center text-gray-500 py-4 border-t border-gray-200"
+                                            >
+                                                No transactions available
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                     )}
-                </div> */}
+                </div>
             </div>
         </AppLayout>
     );

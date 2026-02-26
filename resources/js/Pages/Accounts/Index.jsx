@@ -101,45 +101,62 @@ export default function Deposits() {
         </div>
     );
 
-    const LedgerRow = ({ item, type }) => (
-        <Link
-            href={route(`${type}.show`, item.id)}
-            className="flex items-center justify-between px-6 py-3 hover:bg-indigo-50 transition"
-        >
-            {/* Left */}
-            <div className="flex items-center gap-3 min-w-0">
-                <div className="text-indigo-500">
-                    <i className="fa-solid fa-file-invoice text-xs" />
+    const LedgerRow = ({ item, type }) => {
+        const status = item.account?.status || item.status || "Active";
+
+        const s = status?.toLowerCase();
+
+        const statusColor =
+            s === "new" || s === "active"
+                ? "text-green-600"
+                : s === "closed"
+                  ? "text-red-600"
+                  : "text-gray-500";
+
+        return (
+            <Link
+                href={route(`${type}.show`, item.id)}
+                className="flex items-center justify-between px-6 py-3 hover:bg-indigo-50 transition"
+            >
+                {/* Left */}
+                <div className="flex items-center gap-3 min-w-0">
+                    <div className="text-indigo-500">
+                        <i className="fa-solid fa-file-invoice text-xs" />
+                    </div>
+
+                    <div className="min-w-0">
+                        <div className="text-xs font-medium truncate text-indigo-700">
+                            Account :{" "}
+                            {item.account?.account_number ??
+                                item.name ??
+                                "Deposit Account"}{" "}
+                            (#{item.transaction?.reference ?? "-"})
+                        </div>
+
+                        <div className="text-[11px] text-gray-500">
+                            Start: {formatDate(item.start_date) ?? "—"}
+                        </div>
+                    </div>
                 </div>
 
-                <div className="min-w-0">
-                    <div className="text-xs font-medium  truncate text-indigo-700">
-                        Account :{" "}
-                        {item.account?.account_number ??
-                            item.name ??
-                            "Deposit Account"}{" "}
-                        (#
-                        {item.transaction?.reference ?? "-"})
-                    </div>
-                    <div className="text-[11px] text-gray-500">
-                        Start: {formatDate(item.start_date) ?? "—"}
-                    </div>
-                </div>
-            </div>
+                {/* Right */}
+                <div className="text-right shrink-0">
+                    {type === "fd" && (
+                        <div className="text-xs font-semibold text-gray-800">
+                            Rs.{" "}
+                            {formatAmount(parseAmount(getAmount(item, type)))}
+                        </div>
+                    )}
 
-            {/* Right */}
-            <div className="text-right shrink-0">
-                {type === "fd" && (
-                    <div className="text-xs font-semibold text-gray-800">
-                        Rs. {formatAmount(parseAmount(getAmount(item, type)))}
+                    <div
+                        className={`text-[11px] capitalize font-medium ${statusColor}`}
+                    >
+                        {status}
                     </div>
-                )}
-                <div className="text-[11px] text-gray-500 capitalize">
-                    {item.status ?? "Active"}
                 </div>
-            </div>
-        </Link>
-    );
+            </Link>
+        );
+    };
 
     /* -------------------- Render -------------------- */
 

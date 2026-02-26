@@ -181,15 +181,15 @@ export default function SavingShow() {
                                                     <td className="py-2 px-2 sm:px-3 border-r border-gray-200 whitespace-nowrap">
                                                         <p>
                                                             {formatDate(
-                                                                tx.created_at ??
-                                                                    "-"
+                                                                tx?.deposit_date ??
+                                                                    "-",
                                                             )}
                                                         </p>
                                                         <p className="text-[10px] text-gray-500">
                                                             {new Date(
-                                                                tx.created_at
+                                                                tx.created_at,
                                                             ).toLocaleTimeString(
-                                                                "en-GB"
+                                                                "en-GB",
                                                             )}
                                                         </p>
                                                     </td>
@@ -220,7 +220,7 @@ export default function SavingShow() {
                                                                 : "-"}{" "}
                                                             ₹
                                                             {Number(
-                                                                tx.amount
+                                                                tx.amount,
                                                             ).toLocaleString()}
                                                         </span>
                                                     </td>
@@ -229,7 +229,7 @@ export default function SavingShow() {
                                                     <td className="py-2 px-2 sm:px-3 text-right font-medium whitespace-nowrap">
                                                         ₹
                                                         {Number(
-                                                            tx.balance_after
+                                                            tx.balance_after,
                                                         ).toLocaleString()}
                                                     </td>
                                                 </tr>

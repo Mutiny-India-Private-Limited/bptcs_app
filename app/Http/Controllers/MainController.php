@@ -381,7 +381,14 @@ class MainController extends Controller
             if (!$id) {
                 return redirect()->route('accounts.index');
             }
-            $deposit = Deposit::with('getAmount', 'account', 'account.memberDetail')->findorFail($id);
+            $deposit = Deposit::with([
+                'getAmount',
+                'account',
+                'account.memberDetail',
+                'transactions' => function ($query) {
+                    $query->orderBy('id', 'desc'); // or created_at
+                }
+            ])->findOrFail($id);
             if (!$deposit) {
                 return redirect()->route('accounts.index')->with(['error' => 'Something went wrong.']);
             }
@@ -401,7 +408,27 @@ class MainController extends Controller
                 return redirect()->route('accounts.index')->with(['error' => 'Something went wrong.']);
             }
 
-            $deposit = Deposit::with('getAmount', 'account', 'transactions')->where('account_id', $id)->first()->toArray();
+            $deposit = Deposit::with([
+                'getAmount',
+                'account',
+                'transactions' => function ($query) {
+                    $query->select(
+                        'transactions.*',
+                        'deposits.deposit_date as deposit_date'
+                    )
+                        ->leftJoin('deposits', function ($join) {
+                            $join->on(
+                                DB::raw("REPLACE(transactions.reference, 'DEP-', '')"),
+                                '=',
+                                'deposits.id'
+                            );
+                        })
+                        ->orderBy('transactions.created_at', 'desc');
+                }
+            ])
+                ->where('account_id', $id)
+                ->first()
+                ->toArray();
 
             if (!$deposit) {
                 return redirect()->route('accounts.index');
@@ -421,15 +448,22 @@ class MainController extends Controller
             if (!$id) {
                 return redirect()->route('accounts.index')->with(['error' => 'Something went wrong.']);
             }
+            $account = AccountDetail::findOrFail($id);
 
-            $deposit = AccountDetail::with(['transactions'])
-                ->findOrFail($id);
-            $transactions = $deposit->transactions()
-                ->orderBy('created_at', 'desc')
+            $transactions = $account->transactions()
+                ->select('transactions.*', 'deposits.deposit_date as deposit_date')
+                ->leftJoin('deposits', function ($join) {
+                    $join->on(
+                        DB::raw("REPLACE(transactions.reference, 'DEP-', '')"),
+                        '=',
+                        'deposits.id'
+                    );
+                })
+                ->orderBy('transactions.created_at', 'desc')
                 ->paginate(50);
 
             return Inertia::render('Accounts/SavingShow', [
-                'saving' => $deposit,
+                'saving' => $account,
                 'transactions' => $transactions,
             ]);
         } catch (Throwable $e) {
