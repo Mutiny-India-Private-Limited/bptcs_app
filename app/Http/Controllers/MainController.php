@@ -314,6 +314,7 @@ class MainController extends Controller
                         'id' => $firstDeposit->account_id,
                         'account' => [
                             'account_number' => $firstDeposit->account->account_number ?? 'Deposit Account',
+                            'status' => $firstDeposit->account->status
                         ],
                         'transaction' => [
                             'reference' => optional($firstDeposit->fd_amount)->reference ?? '-',
@@ -325,7 +326,6 @@ class MainController extends Controller
                 })
                 ->values()
                 ->toArray();
-
 
             $savings = Deposit::with(['account', 'getAmount', 'transactions'])
                 ->whereIn('account_id', $savingAccountIds)

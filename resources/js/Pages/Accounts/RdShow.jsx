@@ -86,7 +86,7 @@ export default function Show() {
                     <div className="text-right">
                         <p className="text-xs opacity-90">Status</p>
                         <p className="text-sm font-medium capitalize">
-                            {rd.status ?? "—"}
+                            {rd.account?.status ?? "—"}
                         </p>
                     </div>
                 </div>

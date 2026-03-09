@@ -58,7 +58,8 @@ export default function Deposits() {
     //     n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
     const totalFd = sumAmounts(fd, "fd");
-    const totalRd = rd?.[0]?.amount ?? 0;
+    // const totalRd = rd?.amount;
+    const totalRd = sumAmounts(rd, "rd");
     const totalSavings = savings?.[0]?.amount ?? 0;
     const cgrAmount = totals?.closing ?? 0;
     /* -------------------- UI Parts -------------------- */
@@ -141,7 +142,7 @@ export default function Deposits() {
 
                 {/* Right */}
                 <div className="text-right shrink-0">
-                    {type === "fd" && (
+                    {(type === "fd" || type === "rd") && (
                         <div className="text-xs font-semibold text-gray-800">
                             Rs.{" "}
                             {formatAmount(parseAmount(getAmount(item, type)))}
