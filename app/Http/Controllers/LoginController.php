@@ -20,7 +20,8 @@ class LoginController extends Controller
     }
     public function testLogin()
     {
-        $member = Member::where('member_number', '24520')->first();
+        $member = Member::where('member_number', '34025')->first();
+
         session([
             'member_logged_in' => true,
             'member' => [

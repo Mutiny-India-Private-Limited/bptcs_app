@@ -83,6 +83,8 @@ Route::get('/migrate', function () {
     Artisan::call('migrate');
     return Artisan::output();
 });
+Route::get('/member_dashboard', [MainController::class, 'member_dashboard'])->name('member_dashboard');
+
 Route::post(
     '/generate-biometric-token',
     [GeneralController::class, 'generateToken']

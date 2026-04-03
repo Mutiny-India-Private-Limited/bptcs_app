@@ -28,7 +28,7 @@ export default function Home() {
     } = props;
 
     const [selectedYear, setSelectedYear] = useState(
-        yearlySummary?.[0]?.year || ""
+        yearlySummary?.[0]?.year || "",
     );
     const [activeTab, setActiveTab] = useState("monthly"); // monthly | yearly
 
@@ -53,14 +53,14 @@ export default function Home() {
 
         let labels = Array.from(
             { length: 12 },
-            (_, i) => Object.values(monthShort)[i]
+            (_, i) => Object.values(monthShort)[i],
         );
         let deposits = Array(12).fill(0);
         let interests = Array(12).fill(0);
 
         if (selected?.months?.length) {
             labels = selected.months.map(
-                (m) => monthShort[m.month] || m.month.slice(0, 3)
+                (m) => monthShort[m.month] || m.month.slice(0, 3),
             );
             deposits = selected.months.map((m) => m.deposit || 0);
             interests = selected.months.map((m) => m.interest || 0);
@@ -145,7 +145,7 @@ export default function Home() {
 
         function fetchTokenAndSave() {
             const memberNumber = window.AppInterface.setLoggedInUser(
-                member?.member_number
+                member?.member_number,
             );
             let response = JSON.parse(window.AppInterface.getDeviceDetails?.());
 

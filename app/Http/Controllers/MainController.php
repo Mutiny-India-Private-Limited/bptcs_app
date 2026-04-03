@@ -19,10 +19,35 @@ class MainController extends Controller
 {
 
 
+    private function sumMonthEntries($entriesList)
+    {
+        $result = [];
+
+        foreach ($entriesList as $entry) {
+            foreach (($entry['months'] ?? []) as $monthName => $monthData) {
+
+                if (!isset($result[$monthName])) {
+                    $result[$monthName] = 0;
+                }
+
+                // normalize structure
+                $items = isset($monthData[0]) ? $monthData : [$monthData];
+
+                foreach ($items as $item) {
+                    if (!empty($item['amount'])) {
+                        $result[$monthName] += (float) $item['amount'];
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
 
     public function home(Request $request)
     {
         $member = authMember();
+
         $memberNumber = $member->member_number;
         $cacheKey = "dashboard_summary_{$memberNumber}";
 
@@ -33,31 +58,59 @@ class MainController extends Controller
             $share_details = getTotalShareDetails($memberNumber);
 
             $yearlySummary = [];
+            // foreach ($rawSummary as $financialYear => $data) {
+            //     $depositMonths = $data['deposit'][0]['months'] ?? [];
+            //     $interestMonths = $data['interest'][0]['months'] ?? [];
+
+            //     $months = [];
+            //     foreach ($depositMonths as $monthName => $monthData) {
+            //         $months[] = [
+            //             'month' => $monthName,
+            //             'deposit' => floatval($monthData['amount'] ?? 0),
+            //             'interest' => floatval($interestMonths[$monthName] ?? 0),
+            //         ];
+            //     }
+
+            //     $yearlySummary[] = [
+            //         'year' => $financialYear,
+            //         'totalDeposit' => floatval($data['totalDeposit'] ?? 0),
+            //         'totalWithdrawal' => floatval($data['totalWithdrawal'] ?? 0),
+            //         'totalInterest' => floatval($data['totalInterest'] ?? 0),
+            //         'closing' => floatval($data['closing'] ?? 0),
+            //         'months' => $months,
+            //     ];
+            // }
             foreach ($rawSummary as $financialYear => $data) {
-                $depositMonths = $data['deposit'][0]['months'] ?? [];
-                $interestMonths = $data['interest'][0]['months'] ?? [];
+
+                $depositTotals = $this->sumMonthEntries($data['deposit'] ?? []);
+                $interestTotals = $this->sumMonthEntries($data['interest'] ?? []);
 
                 $months = [];
-                foreach ($depositMonths as $monthName => $monthData) {
+
+                $allMonths = array_unique(array_merge(
+                    array_keys($depositTotals),
+                    array_keys($interestTotals)
+                ));
+
+                foreach ($allMonths as $monthName) {
                     $months[] = [
                         'month' => $monthName,
-                        'deposit' => floatval($monthData['amount'] ?? 0),
-                        'interest' => floatval($interestMonths[$monthName] ?? 0),
+                        'deposit' => $depositTotals[$monthName] ?? 0,
+                        'interest' => $interestTotals[$monthName] ?? 0,
                     ];
                 }
 
                 $yearlySummary[] = [
                     'year' => $financialYear,
-                    'totalDeposit' => floatval($data['totalDeposit'] ?? 0),
-                    'totalWithdrawal' => floatval($data['totalWithdrawal'] ?? 0),
-                    'totalInterest' => floatval($data['totalInterest'] ?? 0),
-                    'closing' => floatval($data['closing'] ?? 0),
+                    'totalDeposit' => (float) ($data['totalDeposit'] ?? 0),
+                    'totalWithdrawal' => (float) ($data['totalWithdrawal'] ?? 0),
+                    'totalInterest' => (float) ($data['totalInterest'] ?? 0),
+                    'closing' => (float) ($data['closing'] ?? 0),
                     'months' => $months,
                 ];
             }
 
             usort($yearlySummary, fn($a, $b) => strcmp($b['year'], $a['year']));
-
             //To get current financial year stats
             $dashboardStats = getDashboardSummary($memberNumber);
             $totals = [
@@ -468,6 +521,121 @@ class MainController extends Controller
             ]);
         } catch (Throwable $e) {
             return redirect()->route('accounts.index')->with(['error' => 'Something went wrong.']);
+        }
+    }
+    public function member_dashboard(Request $request)
+    {
+        try {
+            $memberNumber = request('member');
+            if (!empty($memberNumber)) {
+                $member = Member::where(function ($q) use ($memberNumber) {
+                    $q->where('member_number', $memberNumber);
+                })->first();
+            } else {
+                $member = null; // or handle no input case
+            }
+            if (!empty($member)) {
+                $fdAccountIds = AccountDetail::where('member_sno', $memberNumber)
+                    ->where('account_type', 'fd')
+                    ->pluck('id');
+
+                $rdAccountIds = AccountDetail::where('member_sno', $memberNumber)
+                    ->where('account_type', 'rd')
+                    ->pluck('id');
+
+                $savingAccountIds = AccountDetail::where('member_sno', $memberNumber)
+                    ->where('account_type', 'saving')
+                    ->pluck('id');
+            } else {
+                // If $memberNumber is empty, return empty collections
+                $fdAccountIds = collect();
+                $rdAccountIds = collect();
+                $savingAccountIds = collect();
+            }
+
+            $fd = Deposit::with('account')->whereIn('account_id', $fdAccountIds)
+                ->where('type', 'fd')
+                ->orderBy('start_date', 'desc')
+                ->get()
+                ->map(function ($deposit) {
+                    return array_merge(
+                        $deposit->toArray(),
+                        [
+                            'transaction' => $deposit->fd_amount
+                                ? $deposit->fd_amount->toArray()
+                                : null
+                        ]
+                    );
+                })
+                ->toArray();
+            $rd = Deposit::with(['account', 'getAmount'])
+                ->whereIn('account_id', $rdAccountIds)
+                ->where('type', 'rd')
+                ->get()
+                ->groupBy('account_id')
+                ->map(function ($deposits) {
+                    $firstDeposit = $deposits->first();
+                    return [
+                        'id' => $firstDeposit->account_id,
+                        'account' => [
+                            'account_number' => $firstDeposit->account->account_number ?? 'Deposit Account',
+                            'status' => $firstDeposit->account->status
+                        ],
+                        'transaction' => [
+                            'reference' => optional($firstDeposit->fd_amount)->reference ?? '-',
+                        ],
+                        'start_date' => $firstDeposit->start_date,
+                        'status' => $firstDeposit->status,
+                        'amount' => $deposits->sum(fn($deposit) => optional($deposit->fd_amount)->amount ?? 0),
+                    ];
+                })
+                ->values()
+                ->toArray();
+
+            $savings = Deposit::with(['account', 'getAmount', 'transactions'])
+                ->whereIn('account_id', $savingAccountIds)
+                ->where('type', 'saving')
+                ->get()
+                ->groupBy('account_id')
+                ->map(function ($deposits) {
+                    $firstDeposit = $deposits->first();
+                    $lastBalance = $firstDeposit->account->transactions
+                        ->sortByDesc('created_at')
+                        ->first()
+                        ?->balance_after ?? 0;
+                    return [
+                        'id' => $firstDeposit->account->id,
+                        'account' => [
+                            'account_number' => $firstDeposit->account->account_number ?? 'Deposit Account',
+                        ],
+                        'transaction' => [
+                            'reference' => $firstDeposit->fd_amount->reference,
+                        ],
+                        'start_date' => $firstDeposit->start_date,
+                        'amount' => $lastBalance,
+                        'status' => $firstDeposit->status,
+
+                    ];
+                })
+                ->values()
+                ->toArray();
+            $dashboardStats = getDashboardSummary($memberNumber);
+
+            $totals = [
+                'deposit' => $dashboardStats['totalDeposit'],
+                'withdrawal' => $dashboardStats['totalWithdrawal'],
+                'interest' => $dashboardStats['totalInterest'],
+                'closing' => $dashboardStats['closing'],
+            ];
+            return view('test', [
+                'fd' => $fd,
+                'rd' => $rd,
+                'savings' => $savings,
+                'totals' => $totals,
+                'member' => $member
+            ]);
+        } catch (Throwable $e) {
+            return redirect()->route('home')->with(['error' => 'Something went wrong.']);
         }
     }
 }
