@@ -8,9 +8,13 @@ export const parseAmount = (val) => {
 
 export const getAmount = (item, type = null) => {
     if (!item) return 0;
-
     if (type === "fd") {
+        if (item.status === "closed") {
+            return 0;
+        }
+
         return (
+            item.account?.amount ??
             item.transaction?.amount ??
             item.amount ??
             item.get_amount?.amount ??

@@ -103,7 +103,7 @@ export default function Deposits() {
     );
 
     const LedgerRow = ({ item, type }) => {
-        const status = item.account?.status || item.status || "Active";
+        const status = item.deposit?.status || item.status || "Active";
 
         const s = status?.toLowerCase();
 
